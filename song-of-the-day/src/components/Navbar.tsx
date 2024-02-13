@@ -15,21 +15,21 @@ const Navbar: React.FC<NavbarProps> = () => {
     <nav className={`navbar ${isOpen ? 'open' : ''}`}>
       <div className="container">
         {/* Logo */}
-        <Link to="/" className="logo">
+        <div className="logo">
             <p>LOGO</p>
           {/* Add your logo image or text here */}
-        </Link>
+        </div>
 
         {/* Navigation links */}
         <ul className={`nav-links ${isOpen ? 'open' : ''}`}>
           <li>
-            <Link to="/">Home</Link>
+            <p>Home</p>
           </li>
           <li>
-            <Link to="/">About</Link>
+            <p>About</p>
           </li>
           <li>
-            <Link to="/">Sign In</Link>
+            <p>Sign In</p>
           </li>
         </ul>
 
