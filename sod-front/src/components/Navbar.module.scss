@@ -1,0 +1,163 @@
+.wrapper {
+    position: absolute;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f1f1f1;
+    width: 100%;
+    height: 80px;
+    top: 0px;
+    left: 0px;
+    box-shadow: 0px 10px 15px rgba($color: #000000, $alpha: 0.1);
+    padding: 20px 40px;
+    font-family: Arial, Helvetica, sans-serif;
+  
+    // start navigation left side
+    .nav_left {
+      img{
+        width: 60%;
+      }
+    }
+  // end navigation left side
+    
+    // start navigation main menu bar
+    .main_menu {
+      display: flex;
+      align-items: center;
+      position: relative;
+      ul {
+        display: flex;
+        gap: 2rem;
+        li {
+          a {
+            position: relative;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            &::before {
+              content: "";
+              background: #000;
+              width: 100%;
+              height: 2px;
+              position: absolute;
+              bottom: -3px;
+              transform: scaleX(0);
+              transition: transform 0.4s ease-in;
+              transform-origin: right;
+            }
+            &:hover::before {
+              transform: scaleX(1);
+              transform-origin: left;
+            }
+          }
+        }
+      }
+    }
+  // end navigation main menu bar
+  
+    //start Navigation search input
+    .search_show {
+      display: flex;
+      align-items: center;
+      position: absolute;
+      background: #fff;
+      left: 0;
+      padding: 0px 30px;
+      width: 100%;
+      height: 100%;
+      font-size: 15px;
+  
+      input {
+        width: 100%;
+        outline: none;
+        padding: 10px;
+        border-bottom: 1px solid rgba($color: #000000, $alpha: 0.1);
+      }
+    }
+  
+    .search_hide {
+      position: absolute;
+      right: -100%;
+      display: none;
+    }
+    //end Navigation search input
+    
+    //start Navigation search and close bar
+    .btns {
+      position: relative;
+      left: 0px;
+      display: flex;
+      span {
+        position: relative;
+        display: flex;
+        align-items: center;
+        font-size: large;
+        z-index: 10;
+        cursor: pointer;
+        
+        .show_btn {
+          margin-left: 10px;
+          visibility: visible;
+        }
+  
+        .hide_btn {
+          visibility: hidden;
+        }
+      }
+    //end Navigation search and close bar
+      //toggle button
+      .toggle_btn {
+        position: relative;
+        font-size: 20px;
+        cursor: pointer;
+        display: none;
+      }
+    }
+  }
+  
+  
+  //media start
+  @media (max-width: 800px) {
+    .wrapper{
+      
+      //showing by toggle
+      .main_menu {
+      position: absolute;
+      display: none;
+      background: #f1f1f1;
+      top: 80px;
+      right: -100%;
+      height: auto;
+      padding: 0px 40px;
+      border-top: 1px solid rgba($color: #000000, $alpha: 0.1);
+      border-radius: 10px;
+      box-shadow: 0px 10px 10px rgba($color: #000000, $alpha: 0.1);
+      
+      &--open{
+        display: block;
+        right: 0px;
+      }
+        ul {
+          display: flex;
+          flex-direction: column;
+          padding: 30px 0px;
+          li{
+            a{
+              color: #000000;
+              cursor: pointer;
+            }
+          }
+        }
+      }
+      
+      div {
+        .btns {
+          .toggle_btn {
+            font-size: 20px;
+            cursor: pointer;
+            display: block;
+          }
+        }
+      }
+    }
+  }
