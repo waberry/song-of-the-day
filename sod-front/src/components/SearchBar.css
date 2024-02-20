@@ -1,0 +1,115 @@
+.wrapper {
+  /* position: absolute; */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f1f1f1;
+  width: 100%;
+  height: 80px;
+  top: 0;
+  left: 0;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  padding: 20px 40px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.logo {
+  img{
+    width: 60%;
+  }
+}
+
+.main_menu {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.main_menu ul {
+  display: flex;
+  gap: 2rem;
+}
+
+.main_menu ul li a {
+  position: relative;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.main_menu ul li a::before {
+  content: "";
+  background: #000;
+  width: 100%;
+  height: 2px;
+  position: absolute;
+  bottom: -3px;
+  transform: scaleX(0);
+  transition: transform 0.4s ease-in;
+  transform-origin: right;
+}
+
+.main_menu ul li a:hover::before {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.search_show {
+  display: flex;
+  align-items: center;
+  /* position: absolute; */
+  /* background: #fff; */
+  left: 0;
+  padding: 0 30px;
+  width: 100%;
+  height: 100%;
+  font-size: 15px;
+}
+
+/* .search_show input */
+.search_show input {
+  width: 100%;
+  outline: none;
+  padding: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  position: center;
+  background: inherit
+}
+
+.search_hide {
+  position: absolute;
+  right: -100%;
+  display: none;
+}
+
+.btns {
+  position: relative;
+  left: 0;
+  display: flex;
+
+}
+
+.btns span {
+  position: relative;
+  display: flex;
+  align-items: center;
+  font-size: large;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.btns .show_btn {
+  margin-left: 10px;
+  visibility: visible;
+}
+
+.btns .hide_btn {
+  visibility: hidden;
+}
+
+.toggle_btn {
+  position: relative;
+  font-size: 20px;
+  cursor: pointer;
+  display: none;
+}
