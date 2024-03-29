@@ -14,13 +14,13 @@ const NavBar = () => {
         <div className={css.main_menu}>
           <ul>
             <li>
-              <a>HOME</a>
+              <a>Home</a>
             </li>
             <li>
-              <a>ABOUT</a>
+              <a>About</a>
             </li>
             <li>
-              <a>CONTACT</a>
+              <a>Contact</a>
             </li>
           </ul>
         </div>
