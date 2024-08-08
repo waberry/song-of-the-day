@@ -1,0 +1,186 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
+// Further reading:
+// https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
+// https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
+datasource db {
+  provider = "postgresql" // or "mysql", "sqlite", etc.
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdBy   User   @relation(fields: [createdById], references: [id])
+  createdById String
+
+  @@index([name])
+}
+
+//-------------------------------------------------------------------------------------///
+model Track {
+  id                String        @id
+  name              String
+  duration          Int // This is duration_ms from Spotify
+  popularity        Int?
+  previewUrl        String? // This is preview_url from Spotify
+  spotifyUrl        String // This is the full URL from external_urls.spotify
+  albumId           String
+  album             Album         @relation(fields: [albumId], references: [id])
+  artists           TrackArtist[]
+  available_markets String[]
+  disc_number       Int?
+  explicit          Boolean?
+  is_local          Boolean?
+  track_number      Int?
+  type              String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  DailySong         DailySong?
+}
+
+model Album {
+  id                     String       @id
+  name                   String
+  releaseDate            String? // This is release_date from Spotify
+  release_date_precision String?
+  total_tracks           Int?
+  type                   String?
+  spotifyUrl             String? // This is the full URL from external_urls.spotify
+  imageUrl               String? // Keeping the existing imageUrl field
+  images                 AlbumImage[]
+  tracks                 Track[]
+  createdAt              DateTime     @default(now()) // Keeping the existing createdAt field
+  updatedAt              DateTime     @updatedAt // Keeping the existing updatedAt field
+}
+
+model Artist {
+  id         String        @id
+  name       String
+  spotifyUrl String? // This is the full URL from external_urls.spotify
+  followers  Int?
+  genres     String[]
+  images     ArtistImage[]
+  popularity Int?
+  type       String?
+  tracks     TrackArtist[]
+  createdAt  DateTime      @default(now()) // Keeping the existing createdAt field
+  updatedAt  DateTime      @updatedAt // Keeping the existing updatedAt field
+}
+
+model TrackArtist {
+  track    Track  @relation(fields: [trackId], references: [id])
+  trackId  String
+  artist   Artist @relation(fields: [artistId], references: [id])
+  artistId String
+
+  @@id([trackId, artistId])
+}
+
+model AlbumImage {
+  album   Album  @relation(fields: [albumId], references: [id])
+  albumId String
+  url     String
+  height  Int?
+  width   Int?
+
+  @@id([albumId, url])
+}
+
+model ArtistImage {
+  artist   Artist @relation(fields: [artistId], references: [id])
+  artistId String
+  url      String
+  height   Int?
+  width    Int?
+
+  @@id([artistId, url])
+}
+
+model DailySong {
+  id           String   @id @default(uuid())
+  trackId      String   @unique
+  track        Track    @relation(fields: [trackId], references: [id])
+  selectedDate DateTime @default(now()) @db.Date
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([selectedDate])
+}
+
+model CommonGameState {
+  id            Int       @id @default(autoincrement())
+  lastResetDate DateTime?
+}
+
+model GameState {
+  id              String   @id @default(cuid())
+  anonymousUserId String   @unique
+  pickedSongs     Json
+  dailySongFound  Boolean
+  guessState      Json
+  lastResetDate   DateTime
+  User            User[]
+
+  @@index([anonymousUserId])
+}
+
+//-------------------------------------------------------------------------------------------------------------////
+
+// Necessary for Next auth
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? // @db.Text
+  access_token      String? // @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? // @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String     @id @default(cuid())
+  name          String?
+  email         String?    @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  posts         Post[]
+  spotifyId     String?    @unique
+  GameState     GameState? @relation(fields: [gameStateId], references: [id])
+  gameStateId   String?
+}

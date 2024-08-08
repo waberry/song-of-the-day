@@ -1,0 +1,1 @@
+/Applications/Postgres.app/Contents/Versions/14/bin/postgres "-D" "/Users/berry/Desktop/goinfre/SongOfTheDay/sod/sod-t3/data" "-p" "5432"

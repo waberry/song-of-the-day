@@ -1,0 +1,35 @@
+version: "3.8"
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://berry:berry@db:5432/sod-db
+      - NEXTAUTH_URL=http://localhost:3000
+      - PRISMA_SCHEMA_PATH=/app/prisma/schema.prisma
+    depends_on:
+      - db
+    volumes:
+      - ./sod-t3:/app
+      - /app/node_modules
+      - ./sod-t3/prisma:/app/prisma
+
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=berry
+      - POSTGRES_PASSWORD=berry
+      - POSTGRES_DB=sod-db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U berry -d sod-db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

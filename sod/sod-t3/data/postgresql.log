@@ -1,0 +1,218 @@
+2024-07-21 09:23:46.463 EAT [8996] LOG:  starting PostgreSQL 14.2 on aarch64-apple-darwin20.6.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
+2024-07-21 09:23:46.466 EAT [8996] LOG:  listening on IPv6 address "::1", port 5432
+2024-07-21 09:23:46.466 EAT [8996] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2024-07-21 09:23:46.468 EAT [8996] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2024-07-21 09:23:46.475 EAT [9000] LOG:  database system was shut down at 2024-07-21 09:23:46 EAT
+2024-07-21 09:23:46.486 EAT [8996] LOG:  database system is ready to accept connections
+2024-07-21 09:24:08.445 EAT [9424] FATAL:  database "SODDB" does not exist
+2024-07-21 09:24:08.478 EAT [9426] FATAL:  database "SODDB" does not exist
+2024-07-21 09:24:49.976 EAT [9873] LOG:  could not receive data from client: Connection reset by peer
+2024-07-21 09:24:50.046 EAT [9875] ERROR:  relation "_prisma_migrations" does not exist at character 126
+2024-07-21 09:24:50.046 EAT [9875] STATEMENT:  SELECT "id", "checksum", "finished_at", "migration_name", "logs", "rolled_back_at", "started_at", "applied_steps_count" FROM "_prisma_migrations" ORDER BY "started_at" ASC
+2024-07-21 09:24:55.120 EAT [9875] ERROR:  table "_prisma_migrations" does not exist
+2024-07-21 09:24:55.120 EAT [9875] STATEMENT:  DROP TABLE _prisma_migrations
+2024-07-21 09:24:56.239 EAT [10028] FATAL:  terminating connection due to administrator command
+2024-07-21 19:26:42.370 EAT [8996] LOG:  received fast shutdown request
+2024-07-21 19:26:42.371 EAT [8996] LOG:  aborting any active transactions
+2024-07-21 19:26:42.391 EAT [8996] LOG:  background worker "logical replication launcher" (PID 9007) exited with exit code 1
+2024-07-21 19:26:42.393 EAT [9002] LOG:  shutting down
+2024-07-21 19:26:42.439 EAT [8996] LOG:  database system is shut down
+2024-07-22 09:20:55.177 EAT [16019] LOG:  starting PostgreSQL 14.2 on aarch64-apple-darwin20.6.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
+2024-07-22 09:20:55.181 EAT [16019] LOG:  listening on IPv6 address "::1", port 5432
+2024-07-22 09:20:55.181 EAT [16019] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2024-07-22 09:20:55.182 EAT [16019] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2024-07-22 09:20:55.198 EAT [16020] LOG:  database system was shut down at 2024-07-21 19:26:42 EAT
+2024-07-22 09:20:55.208 EAT [16019] LOG:  database system is ready to accept connections
+2024-07-22 09:45:25.013 EAT [18782] ERROR:  duplicate key value violates unique constraint "DailySong_selectedDate_key"
+2024-07-22 09:45:25.013 EAT [18782] DETAIL:  Key ("selectedDate")=(2024-07-21) already exists.
+2024-07-22 09:45:25.013 EAT [18782] STATEMENT:  INSERT INTO "public"."DailySong" ("id","trackId","selectedDate","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5) RETURNING "public"."DailySong"."id", "public"."DailySong"."trackId", "public"."DailySong"."selectedDate", "public"."DailySong"."createdAt", "public"."DailySong"."updatedAt"
+2024-07-22 12:05:56.583 EAT [16019] LOG:  received fast shutdown request
+2024-07-22 12:05:56.592 EAT [16019] LOG:  aborting any active transactions
+2024-07-22 12:05:56.603 EAT [16019] LOG:  background worker "logical replication launcher" (PID 16026) exited with exit code 1
+2024-07-22 12:05:56.603 EAT [16021] LOG:  shutting down
+2024-07-22 12:05:56.639 EAT [16019] LOG:  database system is shut down
+2024-07-25 10:48:40.199 EAT [29002] LOG:  starting PostgreSQL 14.2 on aarch64-apple-darwin20.6.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
+2024-07-25 10:48:40.276 EAT [29002] LOG:  listening on IPv6 address "::1", port 5432
+2024-07-25 10:48:40.276 EAT [29002] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2024-07-25 10:48:40.277 EAT [29002] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2024-07-25 10:48:40.290 EAT [29004] LOG:  database system was shut down at 2024-07-22 12:05:56 EAT
+2024-07-25 10:48:40.301 EAT [29002] LOG:  database system is ready to accept connections
+2024-07-25 13:30:23.324 EAT [29002] LOG:  received fast shutdown request
+2024-07-25 13:30:23.332 EAT [29002] LOG:  aborting any active transactions
+2024-07-25 13:30:23.335 EAT [33475] FATAL:  terminating connection due to administrator command
+2024-07-25 13:30:23.339 EAT [29002] LOG:  background worker "logical replication launcher" (PID 29010) exited with exit code 1
+2024-07-25 13:30:23.340 EAT [29005] LOG:  shutting down
+2024-07-25 13:30:23.407 EAT [29002] LOG:  database system is shut down
+2024-07-26 15:35:06.045 EAT [37907] LOG:  starting PostgreSQL 14.2 on aarch64-apple-darwin20.6.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
+2024-07-26 15:35:06.050 EAT [37907] LOG:  listening on IPv6 address "::1", port 5432
+2024-07-26 15:35:06.050 EAT [37907] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2024-07-26 15:35:06.051 EAT [37907] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2024-07-26 15:35:06.063 EAT [37908] LOG:  database system was shut down at 2024-07-25 13:30:23 EAT
+2024-07-26 15:35:06.078 EAT [37907] LOG:  database system is ready to accept connections
+2024-07-27 11:41:10.731 EAT [37907] LOG:  received fast shutdown request
+2024-07-27 11:41:10.739 EAT [37907] LOG:  aborting any active transactions
+2024-07-27 11:41:10.744 EAT [37907] LOG:  background worker "logical replication launcher" (PID 37914) exited with exit code 1
+2024-07-27 11:41:10.745 EAT [37909] LOG:  shutting down
+2024-07-27 11:41:10.771 EAT [37907] LOG:  database system is shut down
+2024-07-27 13:31:13.228 EAT [41759] LOG:  starting PostgreSQL 14.2 on aarch64-apple-darwin20.6.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
+2024-07-27 13:31:13.234 EAT [41759] LOG:  listening on IPv6 address "::1", port 5432
+2024-07-27 13:31:13.234 EAT [41759] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2024-07-27 13:31:13.236 EAT [41759] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2024-07-27 13:31:13.304 EAT [41760] LOG:  database system was shut down at 2024-07-27 11:41:10 EAT
+2024-07-27 13:31:13.375 EAT [41759] LOG:  database system is ready to accept connections
+2024-07-27 13:54:39.662 EAT [41759] LOG:  received fast shutdown request
+2024-07-27 13:54:39.664 EAT [41759] LOG:  aborting any active transactions
+2024-07-27 13:54:39.668 EAT [41759] LOG:  background worker "logical replication launcher" (PID 41766) exited with exit code 1
+2024-07-27 13:54:39.668 EAT [41761] LOG:  shutting down
+2024-07-27 13:54:39.684 EAT [41759] LOG:  database system is shut down
+2024-08-02 13:47:20.855 EAT [66617] LOG:  starting PostgreSQL 14.2 on aarch64-apple-darwin20.6.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
+2024-08-02 13:47:20.858 EAT [66617] LOG:  listening on IPv6 address "::1", port 5432
+2024-08-02 13:47:20.858 EAT [66617] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2024-08-02 13:47:20.859 EAT [66617] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2024-08-02 13:47:20.881 EAT [66618] LOG:  database system was shut down at 2024-07-27 13:54:39 EAT
+2024-08-02 13:47:20.892 EAT [66617] LOG:  database system is ready to accept connections
+2024-08-02 13:48:08.623 EAT [66990] ERROR:  relation "public.DailySong" does not exist at character 176
+2024-08-02 13:48:08.623 EAT [66990] STATEMENT:  SELECT "public"."DailySong"."id", "public"."DailySong"."trackId", "public"."DailySong"."selectedDate", "public"."DailySong"."createdAt", "public"."DailySong"."updatedAt" FROM "public"."DailySong" WHERE ("public"."DailySong"."selectedDate" = $1 AND 1=1) LIMIT $2 OFFSET $3
+2024-08-02 13:48:08.785 EAT [66990] ERROR:  relation "public.DailySong" does not exist at character 176
+2024-08-02 13:48:08.785 EAT [66990] STATEMENT:  SELECT "public"."DailySong"."id", "public"."DailySong"."trackId", "public"."DailySong"."selectedDate", "public"."DailySong"."createdAt", "public"."DailySong"."updatedAt" FROM "public"."DailySong" WHERE ("public"."DailySong"."selectedDate" = $1 AND 1=1) LIMIT $2 OFFSET $3
+2024-08-02 13:48:15.088 EAT [66990] ERROR:  relation "public.DailySong" does not exist at character 176
+2024-08-02 13:48:15.088 EAT [66990] STATEMENT:  SELECT "public"."DailySong"."id", "public"."DailySong"."trackId", "public"."DailySong"."selectedDate", "public"."DailySong"."createdAt", "public"."DailySong"."updatedAt" FROM "public"."DailySong" WHERE ("public"."DailySong"."selectedDate" = $1 AND 1=1) LIMIT $2 OFFSET $3
+2024-08-02 13:48:16.517 EAT [66990] ERROR:  relation "public.DailySong" does not exist at character 176
+2024-08-02 13:48:16.517 EAT [66990] STATEMENT:  SELECT "public"."DailySong"."id", "public"."DailySong"."trackId", "public"."DailySong"."selectedDate", "public"."DailySong"."createdAt", "public"."DailySong"."updatedAt" FROM "public"."DailySong" WHERE ("public"."DailySong"."selectedDate" = $1 AND 1=1) LIMIT $2 OFFSET $3
+2024-08-02 13:48:18.730 EAT [66990] ERROR:  relation "public.DailySong" does not exist at character 176
+2024-08-02 13:48:18.730 EAT [66990] STATEMENT:  SELECT "public"."DailySong"."id", "public"."DailySong"."trackId", "public"."DailySong"."selectedDate", "public"."DailySong"."createdAt", "public"."DailySong"."updatedAt" FROM "public"."DailySong" WHERE ("public"."DailySong"."selectedDate" = $1 AND 1=1) LIMIT $2 OFFSET $3
+2024-08-02 13:48:22.940 EAT [66990] ERROR:  relation "public.DailySong" does not exist at character 176
+2024-08-02 13:48:22.940 EAT [66990] STATEMENT:  SELECT "public"."DailySong"."id", "public"."DailySong"."trackId", "public"."DailySong"."selectedDate", "public"."DailySong"."createdAt", "public"."DailySong"."updatedAt" FROM "public"."DailySong" WHERE ("public"."DailySong"."selectedDate" = $1 AND 1=1) LIMIT $2 OFFSET $3
+2024-08-02 13:48:24.551 EAT [66990] ERROR:  relation "public.DailySong" does not exist at character 176
+2024-08-02 13:48:24.551 EAT [66990] STATEMENT:  SELECT "public"."DailySong"."id", "public"."DailySong"."trackId", "public"."DailySong"."selectedDate", "public"."DailySong"."createdAt", "public"."DailySong"."updatedAt" FROM "public"."DailySong" WHERE ("public"."DailySong"."selectedDate" = $1 AND 1=1) LIMIT $2 OFFSET $3
+2024-08-02 13:48:26.842 EAT [66990] ERROR:  relation "public.DailySong" does not exist at character 176
+2024-08-02 13:48:26.842 EAT [66990] STATEMENT:  SELECT "public"."DailySong"."id", "public"."DailySong"."trackId", "public"."DailySong"."selectedDate", "public"."DailySong"."createdAt", "public"."DailySong"."updatedAt" FROM "public"."DailySong" WHERE ("public"."DailySong"."selectedDate" = $1 AND 1=1) LIMIT $2 OFFSET $3
+2024-08-02 13:49:37.956 EAT [67148] ERROR:  relation "_prisma_migrations" does not exist at character 126
+2024-08-02 13:49:37.956 EAT [67148] STATEMENT:  SELECT "id", "checksum", "finished_at", "migration_name", "logs", "rolled_back_at", "started_at", "applied_steps_count" FROM "_prisma_migrations" ORDER BY "started_at" ASC
+2024-08-02 13:50:14.363 EAT [67458] ERROR:  duplicate key value violates unique constraint "DailySong_selectedDate_key"
+2024-08-02 13:50:14.363 EAT [67458] DETAIL:  Key ("selectedDate")=(2024-08-01) already exists.
+2024-08-02 13:50:14.363 EAT [67458] STATEMENT:  INSERT INTO "public"."DailySong" ("id","trackId","selectedDate","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5) RETURNING "public"."DailySong"."id", "public"."DailySong"."trackId", "public"."DailySong"."selectedDate", "public"."DailySong"."createdAt", "public"."DailySong"."updatedAt"
+2024-08-02 19:29:32.184 EAT [66617] LOG:  received fast shutdown request
+2024-08-02 19:29:32.188 EAT [66617] LOG:  aborting any active transactions
+2024-08-02 19:29:32.194 EAT [66617] LOG:  background worker "logical replication launcher" (PID 66624) exited with exit code 1
+2024-08-02 19:29:32.195 EAT [66619] LOG:  shutting down
+2024-08-02 19:29:32.229 EAT [66617] LOG:  database system is shut down
+2024-08-05 13:20:39.047 EAT [83357] LOG:  starting PostgreSQL 14.2 on aarch64-apple-darwin20.6.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
+2024-08-05 13:20:39.054 EAT [83357] LOG:  listening on IPv6 address "::1", port 5432
+2024-08-05 13:20:39.055 EAT [83357] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2024-08-05 13:20:39.073 EAT [83357] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2024-08-05 13:20:39.107 EAT [83359] LOG:  database system was shut down at 2024-08-02 19:29:32 EAT
+2024-08-05 13:20:39.120 EAT [83357] LOG:  database system is ready to accept connections
+2024-08-05 16:13:21.609 EAT [83357] LOG:  received fast shutdown request
+2024-08-05 16:13:21.618 EAT [83357] LOG:  aborting any active transactions
+2024-08-05 16:13:21.627 EAT [83357] LOG:  background worker "logical replication launcher" (PID 83365) exited with exit code 1
+2024-08-05 16:13:21.628 EAT [83360] LOG:  shutting down
+2024-08-05 16:13:21.661 EAT [83357] LOG:  database system is shut down
+2024-08-06 14:22:51.631 EAT [90319] LOG:  starting PostgreSQL 14.2 on aarch64-apple-darwin20.6.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
+2024-08-06 14:22:51.635 EAT [90319] LOG:  listening on IPv6 address "::1", port 5432
+2024-08-06 14:22:51.635 EAT [90319] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2024-08-06 14:22:51.636 EAT [90319] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2024-08-06 14:22:51.651 EAT [90321] LOG:  database system was shut down at 2024-08-05 16:13:21 EAT
+2024-08-06 14:22:51.673 EAT [90319] LOG:  database system is ready to accept connections
+2024-08-06 18:07:10.478 EAT [90319] LOG:  received fast shutdown request
+2024-08-06 18:07:10.481 EAT [90319] LOG:  aborting any active transactions
+2024-08-06 18:07:10.483 EAT [90319] LOG:  background worker "logical replication launcher" (PID 90327) exited with exit code 1
+2024-08-06 18:07:10.484 EAT [90322] LOG:  shutting down
+2024-08-06 18:07:10.502 EAT [90319] LOG:  database system is shut down
+2024-08-07 10:43:02.877 EAT [98997] LOG:  starting PostgreSQL 14.2 on aarch64-apple-darwin20.6.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
+2024-08-07 10:43:02.892 EAT [98997] LOG:  listening on IPv6 address "::1", port 5432
+2024-08-07 10:43:02.892 EAT [98997] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2024-08-07 10:43:02.893 EAT [98997] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2024-08-07 10:43:02.943 EAT [98999] LOG:  database system was shut down at 2024-08-06 18:07:10 EAT
+2024-08-07 10:43:02.957 EAT [98997] LOG:  database system is ready to accept connections
+2024-08-07 10:43:08.906 EAT [99015] ERROR:  duplicate key value violates unique constraint "DailySong_selectedDate_key"
+2024-08-07 10:43:08.906 EAT [99015] DETAIL:  Key ("selectedDate")=(2024-08-06) already exists.
+2024-08-07 10:43:08.906 EAT [99015] STATEMENT:  INSERT INTO "public"."DailySong" ("id","trackId","selectedDate","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5) RETURNING "public"."DailySong"."id", "public"."DailySong"."trackId", "public"."DailySong"."selectedDate", "public"."DailySong"."createdAt", "public"."DailySong"."updatedAt"
+2024-08-07 10:56:48.875 EAT [99546] LOG:  could not receive data from client: Connection reset by peer
+2024-08-07 10:56:50.152 EAT [99624] FATAL:  terminating connection due to administrator command
+2024-08-07 10:56:51.364 EAT [99710] FATAL:  terminating connection due to administrator command
+2024-08-07 11:29:47.248 EAT [1565] FATAL:  terminating connection due to administrator command
+2024-08-07 14:19:37.864 EAT [98997] LOG:  received fast shutdown request
+2024-08-07 14:19:37.867 EAT [98997] LOG:  aborting any active transactions
+2024-08-07 14:19:37.870 EAT [98997] LOG:  background worker "logical replication launcher" (PID 99005) exited with exit code 1
+2024-08-07 14:19:37.875 EAT [99000] LOG:  shutting down
+2024-08-07 14:19:37.894 EAT [98997] LOG:  database system is shut down
+2024-08-07 16:54:03.329 EAT [7496] LOG:  starting PostgreSQL 14.2 on aarch64-apple-darwin20.6.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
+2024-08-07 16:54:03.333 EAT [7496] LOG:  listening on IPv6 address "::1", port 5432
+2024-08-07 16:54:03.333 EAT [7496] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2024-08-07 16:54:03.334 EAT [7496] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2024-08-07 16:54:03.347 EAT [7497] LOG:  database system was shut down at 2024-08-07 14:19:37 EAT
+2024-08-07 16:54:03.364 EAT [7496] LOG:  database system is ready to accept connections
+2024-08-07 17:15:36.447 EAT [8326] LOG:  could not receive data from client: Connection reset by peer
+2024-08-07 17:16:58.467 EAT [8785] LOG:  could not receive data from client: Connection reset by peer
+2024-08-07 17:16:58.825 EAT [8809] FATAL:  terminating connection due to administrator command
+2024-08-07 17:16:59.765 EAT [8918] FATAL:  terminating connection due to administrator command
+2024-08-07 17:18:15.030 EAT [9222] LOG:  could not receive data from client: Connection reset by peer
+2024-08-07 17:59:16.172 EAT [10878] LOG:  could not receive data from client: Connection reset by peer
+2024-08-07 17:59:19.654 EAT [10973] FATAL:  terminating connection due to administrator command
+2024-08-07 17:59:20.893 EAT [11021] FATAL:  terminating connection due to administrator command
+2024-08-07 18:00:25.224 EAT [11182] LOG:  could not receive data from client: Connection reset by peer
+2024-08-07 18:00:25.805 EAT [11226] FATAL:  terminating connection due to administrator command
+2024-08-07 18:00:26.720 EAT [11344] FATAL:  terminating connection due to administrator command
+2024-08-07 18:47:08.656 EAT [7496] LOG:  received fast shutdown request
+2024-08-07 18:47:08.656 EAT [7496] LOG:  aborting any active transactions
+2024-08-07 18:47:08.660 EAT [7496] LOG:  background worker "logical replication launcher" (PID 7503) exited with exit code 1
+2024-08-07 18:47:08.661 EAT [7498] LOG:  shutting down
+2024-08-07 18:47:08.677 EAT [7496] LOG:  database system is shut down
+2024-08-08 11:51:36.330 EAT [22703] LOG:  starting PostgreSQL 14.2 on aarch64-apple-darwin20.6.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
+2024-08-08 11:51:36.334 EAT [22703] LOG:  listening on IPv6 address "::1", port 5432
+2024-08-08 11:51:36.335 EAT [22703] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2024-08-08 11:51:36.335 EAT [22703] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2024-08-08 11:51:36.396 EAT [22705] LOG:  database system was shut down at 2024-08-07 18:47:08 EAT
+2024-08-08 11:51:36.416 EAT [22703] LOG:  database system is ready to accept connections
+2024-08-08 13:15:43.326 EAT [22703] LOG:  received fast shutdown request
+2024-08-08 13:15:43.328 EAT [22703] LOG:  aborting any active transactions
+2024-08-08 13:15:43.332 EAT [22703] LOG:  background worker "logical replication launcher" (PID 22713) exited with exit code 1
+2024-08-08 13:15:43.332 EAT [22708] LOG:  shutting down
+2024-08-08 13:15:43.367 EAT [22703] LOG:  database system is shut down
+2024-08-08 13:39:41.930 EAT [25575] LOG:  starting PostgreSQL 14.2 on aarch64-apple-darwin20.6.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
+2024-08-08 13:39:41.935 EAT [25575] LOG:  listening on IPv6 address "::1", port 5432
+2024-08-08 13:39:41.935 EAT [25575] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2024-08-08 13:39:41.936 EAT [25575] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2024-08-08 13:39:41.945 EAT [25577] LOG:  database system was shut down at 2024-08-08 13:15:43 EAT
+2024-08-08 13:39:41.953 EAT [25575] LOG:  database system is ready to accept connections
+2024-08-08 14:22:06.785 EAT [26471] ERROR:  insert or update on table "GameState" violates foreign key constraint "GameState_userId_fkey"
+2024-08-08 14:22:06.785 EAT [26471] DETAIL:  Key (userId)=(waberryda) is not present in table "User".
+2024-08-08 14:22:06.785 EAT [26471] STATEMENT:  INSERT INTO "public"."GameState" ("id","userId","pickedSongs","dailySongFound","guessState","lastResetDate") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."GameState"."id", "public"."GameState"."userId", "public"."GameState"."pickedSongs", "public"."GameState"."dailySongFound", "public"."GameState"."guessState", "public"."GameState"."lastResetDate"
+2024-08-08 14:22:06.823 EAT [26471] ERROR:  insert or update on table "GameState" violates foreign key constraint "GameState_userId_fkey"
+2024-08-08 14:22:06.823 EAT [26471] DETAIL:  Key (userId)=(waberryda) is not present in table "User".
+2024-08-08 14:22:06.823 EAT [26471] STATEMENT:  INSERT INTO "public"."GameState" ("id","userId","pickedSongs","dailySongFound","guessState","lastResetDate") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."GameState"."id", "public"."GameState"."userId", "public"."GameState"."pickedSongs", "public"."GameState"."dailySongFound", "public"."GameState"."guessState", "public"."GameState"."lastResetDate"
+2024-08-08 15:13:31.066 EAT [28067] ERROR:  insert or update on table "GameState" violates foreign key constraint "GameState_userId_fkey"
+2024-08-08 15:13:31.066 EAT [28067] DETAIL:  Key (userId)=(waberryda) is not present in table "User".
+2024-08-08 15:13:31.066 EAT [28067] STATEMENT:  INSERT INTO "public"."GameState" ("id","userId","pickedSongs","dailySongFound","guessState","lastResetDate") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."GameState"."id", "public"."GameState"."userId", "public"."GameState"."pickedSongs", "public"."GameState"."dailySongFound", "public"."GameState"."guessState", "public"."GameState"."lastResetDate"
+2024-08-08 15:13:31.106 EAT [28067] ERROR:  insert or update on table "GameState" violates foreign key constraint "GameState_userId_fkey"
+2024-08-08 15:13:31.106 EAT [28067] DETAIL:  Key (userId)=(waberryda) is not present in table "User".
+2024-08-08 15:13:31.106 EAT [28067] STATEMENT:  INSERT INTO "public"."GameState" ("id","userId","pickedSongs","dailySongFound","guessState","lastResetDate") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."GameState"."id", "public"."GameState"."userId", "public"."GameState"."pickedSongs", "public"."GameState"."dailySongFound", "public"."GameState"."guessState", "public"."GameState"."lastResetDate"
+2024-08-08 15:13:41.313 EAT [28067] ERROR:  insert or update on table "GameState" violates foreign key constraint "GameState_userId_fkey"
+2024-08-08 15:13:41.313 EAT [28067] DETAIL:  Key (userId)=(waberryda) is not present in table "User".
+2024-08-08 15:13:41.313 EAT [28067] STATEMENT:  INSERT INTO "public"."GameState" ("id","userId","pickedSongs","dailySongFound","guessState","lastResetDate") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."GameState"."id", "public"."GameState"."userId", "public"."GameState"."pickedSongs", "public"."GameState"."dailySongFound", "public"."GameState"."guessState", "public"."GameState"."lastResetDate"
+2024-08-08 15:13:41.343 EAT [28067] ERROR:  insert or update on table "GameState" violates foreign key constraint "GameState_userId_fkey"
+2024-08-08 15:13:41.343 EAT [28067] DETAIL:  Key (userId)=(waberryda) is not present in table "User".
+2024-08-08 15:13:41.343 EAT [28067] STATEMENT:  INSERT INTO "public"."GameState" ("id","userId","pickedSongs","dailySongFound","guessState","lastResetDate") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."GameState"."id", "public"."GameState"."userId", "public"."GameState"."pickedSongs", "public"."GameState"."dailySongFound", "public"."GameState"."guessState", "public"."GameState"."lastResetDate"
+2024-08-08 15:58:02.644 EAT [29073] ERROR:  insert or update on table "GameState" violates foreign key constraint "GameState_userId_fkey"
+2024-08-08 15:58:02.644 EAT [29073] DETAIL:  Key (userId)=(waberryda) is not present in table "User".
+2024-08-08 15:58:02.644 EAT [29073] STATEMENT:  INSERT INTO "public"."GameState" ("id","userId","pickedSongs","dailySongFound","guessState","lastResetDate") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."GameState"."id", "public"."GameState"."userId", "public"."GameState"."pickedSongs", "public"."GameState"."dailySongFound", "public"."GameState"."guessState", "public"."GameState"."lastResetDate"
+2024-08-08 16:16:03.316 EAT [29627] LOG:  could not receive data from client: Connection reset by peer
+2024-08-08 16:16:05.110 EAT [29774] FATAL:  terminating connection due to administrator command
+2024-08-08 16:24:40.401 EAT [30273] FATAL:  terminating connection due to administrator command
+2024-08-08 16:24:40.798 EAT [30330] FATAL:  terminating connection due to administrator command
+2024-08-08 16:40:33.674 EAT [31360] LOG:  could not receive data from client: Connection reset by peer
+2024-08-08 17:13:20.278 EAT [34058] ERROR:  syntax error at or near "-" at character 1
+2024-08-08 17:13:20.278 EAT [34058] STATEMENT:  -l
+	psql
+	l
+	select * from GameState
+	SELECT * FROM GameState
+	clear
+	select *
+	from pg.berry.GameState
+	SELECT * FROM "GameState" LIMIT 10;
+2024-08-08 17:14:10.687 EAT [34058] ERROR:  syntax error at or near "SELECT" at character 27
+2024-08-08 17:14:10.687 EAT [34058] STATEMENT:  SELECT * FROM "GameState"
+	SELECT * FROM "DailySong"
+	SELECT * FROM "DailySong" LIMIT 10;
