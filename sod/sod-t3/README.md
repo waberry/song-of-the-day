@@ -1,29 +1,51 @@
-# Create T3 App
+# TODO
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+## General
+- Type safety
+- refactor where needed
+- Check and correct naming of files and folders
+  - consistency is the word here
+- Containerisation
+- deploy on ngrok for testing
+- add refreshToken in context
+- implement callSpotifyAPI from Utils
+- refresh not working on getProfileUser procedure
+- replace all the denied access code with proper comp
 
-## What's next? How do I make an app with this?
+## Landing page
+- Need to check the length of the search result, if there is any limit to it
+- search results need to be relevant as much as possible
+- test localstorage of visitor's correct guess
+  - maybe cookie would better ?
+  - whatever solution -> sync with server for better management
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+## Navbar
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## History
+- rework design
+- loading screen not good
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+## About
 
-## Learn More
+## Contact
+- make it ssr + loading but component client is imported -> faster
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+## Footer
+- make one
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+## Feature Ideas
+- customised song of the day depending of user's taste
+- implement easy mode, where a bit of the song is played
+- allow player to choose his genre
+- improve picking algo
+- use https://www.tremor.so/ for design ?
 
-## How do I deploy this?
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+# Improvments
+## implement Redis
+  - todo !
+## Data mining:
+  ### collect ids of attempted selections/guesses
+## search input
+  - autocomplete ? trigger search as soon as it reaches 1 or 2 chars ?
