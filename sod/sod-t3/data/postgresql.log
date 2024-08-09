@@ -216,3 +216,8 @@
 2024-08-08 17:14:10.687 EAT [34058] STATEMENT:  SELECT * FROM "GameState"
 	SELECT * FROM "DailySong"
 	SELECT * FROM "DailySong" LIMIT 10;
+2024-08-08 17:39:00.180 EAT [25575] LOG:  received fast shutdown request
+2024-08-08 17:39:00.180 EAT [25575] LOG:  aborting any active transactions
+2024-08-08 17:39:00.185 EAT [25575] LOG:  background worker "logical replication launcher" (PID 25583) exited with exit code 1
+2024-08-08 17:39:00.185 EAT [25578] LOG:  shutting down
+2024-08-08 17:39:00.198 EAT [25575] LOG:  database system is shut down
