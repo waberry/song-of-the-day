@@ -1,6 +1,8 @@
 version: "3.8"
 services:
   app:
+    networks:
+      - app-network
     build:
       context: .
       dockerfile: Dockerfile
@@ -8,16 +10,28 @@ services:
       - "3000:3000"
     environment:
       - DATABASE_URL=postgresql://berry:berry@db:5432/sod-db
-      - NEXTAUTH_URL=http://localhost:3000
       - PRISMA_SCHEMA_PATH=/app/prisma/schema.prisma
+      - NEXTAUTH_URL=http://localhost:3000
+      # - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      # - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}
+      # - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET}
+      # - SPOTIFY_REDIRECT_URI=${SPOTIFY_REDIRECT_URI}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - ./sod-t3:/app
       - /app/node_modules
       - ./sod-t3/prisma:/app/prisma
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   db:
+    networks:
+      - app-network
     image: postgres:13
     environment:
       - POSTGRES_USER=berry
@@ -30,6 +44,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   postgres_data:

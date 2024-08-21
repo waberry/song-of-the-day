@@ -28,15 +28,12 @@ export default function LandingPage() {
   const [submittedSearchTerm, setSubmittedSearchTerm] = useState("");
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
-
   const [commonGameState, setCommonGameState] = useState(null);
   const [gameState, setGameState] = useState(null);
   const [dailySong, setDailySong] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const [anonymousUserId, setAnonymousUserId] = useState<string | null>(null);
-
   const {
     data: filteredSongs = [],
     isFetching,
@@ -49,45 +46,75 @@ export default function LandingPage() {
 
   useEffect(() => {
     setIsClient(true);
-    const userId = getAnonymousUserId();
-    setAnonymousUserId(userId);
-
-    async function fetchInitialData() {
-      if (!userId) return;
+    async function initializeGameState() {
       try {
-        const fetchedCommonGameState = await getCommonGameState();
-        setCommonGameState(fetchedCommonGameState);
+        const userId = await getAnonymousUserId(); // Ensures asynchronous handling
+        setAnonymousUserId(userId);
+        const commonState = await getCommonGameState();
+        setCommonGameState(commonState);
+        const today = new Date();
+        const gameStateFromStorage = localStorage.getItem(`gameState_${userId}`);
+        let currentGameState;
 
-        // Check local storage first
-        const localGameState = localStorage.getItem(`gameState_${userId}`);
-        let fetchedGameState;
+        if (gameStateFromStorage) {
+          const parsedGameState = JSON.parse(gameStateFromStorage);
+          const lastResetDate = new Date(parsedGameState.lastResetDate);
+          const isSameDay = lastResetDate.toDateString() === today.toDateString();
 
-        if (localGameState) {
-          fetchedGameState = JSON.parse(localGameState);
-          // Verify if the local state is for today
-          if (isNewDay(new Date(fetchedGameState.lastResetDate))) {
-            fetchedGameState = await resetClientGameState(userId);
+          if (!isSameDay) {
+            currentGameState = await resetClientGameState(userId);
+          } else {
+            currentGameState = parsedGameState;
           }
         } else {
-          fetchedGameState = await getGameState(userId);
+          currentGameState = await getGameState(userId);
+          localStorage.setItem(`gameState_${userId}`, JSON.stringify(currentGameState));
         }
 
-        setGameState(fetchedGameState);
+        setGameState(currentGameState);
+        const dailySong = await getDailySong();
+        setDailySong(dailySong);
 
-        const fetchedDailySong = await getDailySong();
-        setDailySong(fetchedDailySong);
-
-        // Sync local state with server state
-        await saveGameState(userId, fetchedGameState);
-      } catch (error) {
-        console.error("Error fetching initial data:", error);
+      } catch (err) {
+        console.error("Initialization error:", err);
         setError("Failed to load game data. Please try again later.");
       } finally {
         setIsLoading(false);
       }
     }
-    fetchInitialData();
+
+    initializeGameState();
   }, []);
+
+  // useEffect(() => {
+  //     if (gameState?.dailySongFound) {
+  //       saveGameState(anonymousUserId, gameState).catch(err => {
+  //         console.error("Failed to save game state to the database:", err);
+  //       });
+  //     }
+  //   }, [gameState?.dailySongFound, anonymousUserId, gameState]);
+
+  useEffect(() => {
+    if (gameState?.dailySongFound) {
+      saveGameState(anonymousUserId, gameState).catch(err => {
+        console.error("Failed to save game state to the database:", err);
+      });
+    }
+
+    // Set up an interval to save the game state every minute
+    const intervalId = setInterval(() => {
+      if (gameState && anonymousUserId) {
+        console.log("Automatically saving game state to the database...");
+        saveGameState(anonymousUserId, gameState).catch(err => {
+          console.error("Failed to periodically save game state:", err);
+        });
+      }
+    }, 60000); // 60000 milliseconds = 1 minute
+
+    // Clean up the interval when the component unmounts or dependencies change
+    return () => clearInterval(intervalId);
+  }, [gameState, anonymousUserId]);
+
 
   useEffect(() => {
     if (showPopup) {
@@ -115,16 +142,16 @@ export default function LandingPage() {
       );
     }
   }, [gameState, anonymousUserId]);
-  const resetClientGameState = async (userId: string) => {
-    const resetState = {
+
+  const resetClientGameState = async (userId) => {
+    const newGameState = {
       pickedSongs: [],
       dailySongFound: false,
       guessState: { guessedCorrectly: false, attempts: 0 },
-      lastResetDate: new Date(),
+      lastResetDate: new Date().toISOString()
     };
-    const updatedGameState = await saveGameState(userId, resetState);
-    setGameState(updatedGameState);
-    return updatedGameState;
+    await saveGameState(userId, newGameState);
+    return newGameState;
   };
 
   const compareSongs = (selectedSong, dailySong) => {

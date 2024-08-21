@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlay, faPause } from "@fortawesome/free-solid-svg-icons";
 import { usePlayer } from "./PlayerContext";
+import { debounce } from "~/utils/misc";
 
 interface PlayerProps {
   song: any;
@@ -16,6 +17,7 @@ export default function Player({ song, isFound }: PlayerProps) {
   const playerRef = useRef<Spotify.Player | null>(null);
   const deviceIdRef = useRef<string | null>(null);
   const previewTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const initializePlayer = useCallback(() => {
     if (!accessToken) return;
@@ -24,7 +26,7 @@ export default function Player({ song, isFound }: PlayerProps) {
     script.src = "https://sdk.scdn.co/spotify-player.js";
     script.async = true;
 
-    script.onload = () => {
+    const onScriptLoad = () => {
       if (window.Spotify) {
         const player = new window.Spotify.Player({
           name: "Song of the Day Player",
@@ -36,11 +38,13 @@ export default function Player({ song, isFound }: PlayerProps) {
           console.log("Ready with Device ID", device_id);
           deviceIdRef.current = device_id;
           setIsReady(true);
+          setError(null);
         });
 
         player.addListener("not_ready", ({ device_id }) => {
           console.log("Device ID has gone offline", device_id);
           setIsReady(false);
+          setError("Device disconnected");
         });
 
         player.connect();
@@ -48,6 +52,7 @@ export default function Player({ song, isFound }: PlayerProps) {
       }
     };
 
+    script.onload = onScriptLoad;
     document.body.appendChild(script);
 
     return () => {
@@ -66,26 +71,32 @@ export default function Player({ song, isFound }: PlayerProps) {
   const makeSpotifyRequest = async (
     endpoint: string,
     method: string,
-    body?: object,
+    body?: object
   ) => {
     if (!accessToken) throw new Error("No access token available");
 
-    const response = await fetch(`https://api.spotify.com/v1${endpoint}`, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    try {
+      const response = await fetch(`https://api.spotify.com/v1${endpoint}`, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: body ? JSON.stringify(body) : undefined,
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Spotify API Error:", errorData);
-      throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Spotify API Error:", errorData);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return response;
+    } catch (err) {
+      console.error("Network error:", err);
+      setError("Failed to connect to Spotify API");
+      throw err;
     }
-
-    return response;
   };
 
   const pausePlayback = async () => {
@@ -95,12 +106,14 @@ export default function Player({ song, isFound }: PlayerProps) {
       setIsPlaying(false);
     } catch (error) {
       console.error("Error pausing playback:", error);
+      setError("Error pausing playback");
     }
   };
 
   const playTrack = async (trackUri: string, positionMs: number = 0) => {
     if (!isReady || !deviceIdRef.current) {
       console.error("Player not ready or device ID not available");
+      setError("Player not ready");
       return;
     }
 
@@ -111,14 +124,23 @@ export default function Player({ song, isFound }: PlayerProps) {
         {
           uris: [trackUri],
           position_ms: positionMs,
-        },
+        }
       );
       console.log("Play request successful");
       setIsPlaying(true);
+      setError(null);
     } catch (error) {
       console.error("Error playing track:", error);
+      setError("Error playing track");
     }
   };
+
+  const debouncedPlayTrack = useCallback(
+    debounce(async (trackUri: string, positionMs: number = 0) => {
+      await playTrack(trackUri, positionMs);
+    }, 300),
+    []
+  );
 
   const togglePlay = async (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -133,13 +155,13 @@ export default function Player({ song, isFound }: PlayerProps) {
       }
     } else {
       if (!isFound) {
-        await playTrack(songUri);
+        debouncedPlayTrack(songUri);
         previewTimeoutRef.current = setTimeout(() => {
           pausePlayback();
           console.log("Preview ended");
         }, 2000); // 2 seconds preview
       } else {
-        await playTrack(songUri);
+        debouncedPlayTrack(songUri);
       }
     }
   };
@@ -152,9 +174,7 @@ export default function Player({ song, isFound }: PlayerProps) {
 
   return (
     <div className="relative mx-auto max-w-md overflow-hidden rounded-lg bg-gray-800 p-4 shadow-lg">
-      <div
-        className={`${!isFound ? "blur-sm" : ""} transition-all duration-300`}
-      >
+      <div className={`${!isFound ? "blur-md" : ""} transition-all duration-300`}>
         <img
           src={song.album.imageUrl || "https://via.placeholder.com/300"}
           alt={song.name}
@@ -177,6 +197,13 @@ export default function Player({ song, isFound }: PlayerProps) {
           </p>
         </div>
       )}
+
+      {error && (
+        <div className="text-red-500 mb-4">
+          <p>{error}</p>
+        </div>
+      )}
+
       <div>
         <button
           onClick={togglePlay}

@@ -221,3 +221,51 @@
 2024-08-08 17:39:00.185 EAT [25575] LOG:  background worker "logical replication launcher" (PID 25583) exited with exit code 1
 2024-08-08 17:39:00.185 EAT [25578] LOG:  shutting down
 2024-08-08 17:39:00.198 EAT [25575] LOG:  database system is shut down
+2024-08-09 11:18:07.059 EAT [41803] LOG:  starting PostgreSQL 14.2 on aarch64-apple-darwin20.6.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
+2024-08-09 11:18:07.097 EAT [41803] LOG:  listening on IPv6 address "::1", port 5432
+2024-08-09 11:18:07.097 EAT [41803] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2024-08-09 11:18:07.098 EAT [41803] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2024-08-09 11:18:07.109 EAT [41804] LOG:  database system was shut down at 2024-08-08 17:39:00 EAT
+2024-08-09 11:18:07.129 EAT [41803] LOG:  database system is ready to accept connections
+2024-08-09 11:18:44.845 EAT [42653] FATAL:  database "GameState" does not exist
+2024-08-09 11:21:43.349 EAT [43558] ERROR:  duplicate key value violates unique constraint "DailySong_selectedDate_key"
+2024-08-09 11:21:43.349 EAT [43558] DETAIL:  Key ("selectedDate")=(2024-08-08) already exists.
+2024-08-09 11:21:43.349 EAT [43558] STATEMENT:  INSERT INTO "public"."DailySong" ("id","trackId","selectedDate","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5) RETURNING "public"."DailySong"."id", "public"."DailySong"."trackId", "public"."DailySong"."selectedDate", "public"."DailySong"."createdAt", "public"."DailySong"."updatedAt"
+2024-08-09 11:23:48.919 EAT [41803] LOG:  received fast shutdown request
+2024-08-09 11:23:48.920 EAT [41803] LOG:  aborting any active transactions
+2024-08-09 11:23:48.923 EAT [41803] LOG:  background worker "logical replication launcher" (PID 41810) exited with exit code 1
+2024-08-09 11:23:48.924 EAT [41805] LOG:  shutting down
+2024-08-09 11:23:48.942 EAT [41803] LOG:  database system is shut down
+2024-08-09 11:52:04.165 EAT [44493] LOG:  starting PostgreSQL 14.2 on aarch64-apple-darwin20.6.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
+2024-08-09 11:52:04.170 EAT [44493] LOG:  listening on IPv6 address "::1", port 5432
+2024-08-09 11:52:04.170 EAT [44493] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2024-08-09 11:52:04.171 EAT [44493] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2024-08-09 11:52:04.179 EAT [44495] LOG:  database system was shut down at 2024-08-09 11:23:48 EAT
+2024-08-09 11:52:04.193 EAT [44493] LOG:  database system is ready to accept connections
+2024-08-09 12:03:56.299 EAT [44493] LOG:  received fast shutdown request
+2024-08-09 12:03:56.299 EAT [44493] LOG:  aborting any active transactions
+2024-08-09 12:03:56.306 EAT [44493] LOG:  background worker "logical replication launcher" (PID 44501) exited with exit code 1
+2024-08-09 12:03:56.306 EAT [44496] LOG:  shutting down
+2024-08-09 12:03:56.331 EAT [44493] LOG:  database system is shut down
+2024-08-09 12:12:31.238 EAT [44926] LOG:  starting PostgreSQL 14.2 on aarch64-apple-darwin20.6.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
+2024-08-09 12:12:31.245 EAT [44926] LOG:  listening on IPv6 address "::1", port 5432
+2024-08-09 12:12:31.245 EAT [44926] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2024-08-09 12:12:31.246 EAT [44926] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2024-08-09 12:12:31.302 EAT [44928] LOG:  database system was shut down at 2024-08-09 12:03:56 EAT
+2024-08-09 12:12:31.321 EAT [44926] LOG:  database system is ready to accept connections
+2024-08-09 12:39:43.475 EAT [44926] LOG:  received fast shutdown request
+2024-08-09 12:39:43.477 EAT [44926] LOG:  aborting any active transactions
+2024-08-09 12:39:43.481 EAT [44926] LOG:  background worker "logical replication launcher" (PID 44934) exited with exit code 1
+2024-08-09 12:39:43.482 EAT [44929] LOG:  shutting down
+2024-08-09 12:39:43.525 EAT [44926] LOG:  database system is shut down
+2024-08-09 13:10:44.170 EAT [46660] LOG:  starting PostgreSQL 14.2 on aarch64-apple-darwin20.6.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
+2024-08-09 13:10:44.179 EAT [46660] LOG:  listening on IPv6 address "::1", port 5432
+2024-08-09 13:10:44.179 EAT [46660] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2024-08-09 13:10:44.180 EAT [46660] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2024-08-09 13:10:44.195 EAT [46661] LOG:  database system was shut down at 2024-08-09 12:39:43 EAT
+2024-08-09 13:10:44.209 EAT [46660] LOG:  database system is ready to accept connections
+2024-08-09 13:11:01.138 EAT [46660] LOG:  received fast shutdown request
+2024-08-09 13:11:01.139 EAT [46660] LOG:  aborting any active transactions
+2024-08-09 13:11:01.141 EAT [46660] LOG:  background worker "logical replication launcher" (PID 46667) exited with exit code 1
+2024-08-09 13:11:01.141 EAT [46662] LOG:  shutting down
+2024-08-09 13:11:01.154 EAT [46660] LOG:  database system is shut down

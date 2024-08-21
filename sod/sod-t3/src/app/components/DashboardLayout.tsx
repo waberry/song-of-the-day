@@ -14,7 +14,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   children,
 }) => {
   return (
-    <div className="min-h-screen bg-gray-100 py-12">
+    <div className="min-h-screen bg-gradient-to-b from-sky-400 to-indigo-800 text-indigo-900 py-12">
       <div className="container mx-auto px-4">
         <h1 className="mb-12 text-center text-4xl font-bold text-gray-800">
           {title}

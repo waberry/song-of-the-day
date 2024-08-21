@@ -1,9 +1,13 @@
 "use client";
 import { api } from "~/trpc/react";
+import { React, useEffect } from "react";
 
 export default function useDailySongPrefetch() {
   const utils = api.useContext();
-  utils.spotify.getDailySong.prefetch();
+
+  useEffect(() => {
+    utils.spotify.getDailySong.prefetch();
+  }, [utils.spotify.getDailySong]);
 }
 
 export function DailySongPrefetchWrapper({
