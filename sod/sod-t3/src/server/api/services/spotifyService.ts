@@ -185,7 +185,7 @@ export const getUserProfile = async (
   }
 };
 
-export const getPlayHistory = async (
+export const fetchPlayHistory = async (
   accessToken: string,
   limit: number = 50,
   cursor?: string,

@@ -1,15 +1,19 @@
 'use client';
-
 import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
 import { MdHistory, MdSearch } from "react-icons/md";
 import Link from "next/link";
 import { useInView } from "react-intersection-observer";
+import { getStoredHistory } from "../actions/historyActions";
+// import { useSession } from "next-auth/react";
+
+
 
 export default function HistoryContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [allPlayHistory, setAllPlayHistory] = useState([]);
   const { ref, inView } = useInView();
+  // const { data: session, status } = useSession();
 
   const {
     data: playHistory,
@@ -27,6 +31,8 @@ export default function HistoryContent() {
       refetchOnWindowFocus: false,
     },
   );
+  // console.log("SESSION HISTORY: ->\n", session.user.id);
+  // const storedHistory = getStoredHistory(session.user.id);//anonymousUserId not necessary maybe
 
   useEffect(() => {
     if (playHistory) {

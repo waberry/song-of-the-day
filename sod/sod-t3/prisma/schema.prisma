@@ -129,7 +129,7 @@ model CommonGameState {
 
 model GameState {
   id              String   @id @default(cuid())
-  anonymousUserId String   @unique
+  anonymousUserId String
   pickedSongs     Json
   dailySongFound  Boolean
   guessState      Json
@@ -140,6 +140,21 @@ model GameState {
   updatedAt       DateTime @default(now()) @updatedAt
 
   @@index([anonymousUserId])
+}
+
+model History {
+  id            String   @id
+  name          String
+  imageUrl      String
+  albumName     String
+  spotifyUrl    String
+  artists       String[] // Artists stored as a single string for simplicity
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  playedAt      DateTime @unique
+  spotifyUserId String
+
+  @@index([spotifyUserId, playedAt]) // Index for querying by Spotify user ID and timestamp
 }
 
 model User {

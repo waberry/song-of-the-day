@@ -10,7 +10,7 @@ import {
   getTopTracks,
   getRecentlyPlayed,
   getUserProfile,
-  getPlayHistory,
+  fetchPlayHistory,
   getTopArtists,
   getSavedTracks,
   getSavedAlbums,
@@ -28,13 +28,6 @@ import { selectAndStoreDailySong } from "../services/dailySongService";
 import { TRPCError } from "@trpc/server";
 
 export const spotifyRouter = createTRPCRouter({
-  // searchTracks: publicProcedure
-  //   .input(z.object({ searchTerm: z.string().min(1) }))
-  //   .query(async ({ input }) => {
-  //     const spotifyAccessToken = await getSpotifyAccessToken();
-  //     return searchSpotifyTracks(spotifyAccessToken, input.searchTerm);
-  //   }),
-  //
   searchTracks: publicProcedure
     .input(z.object({ searchTerm: z.string().min(1) }))
     .query(async ({ input }) => {
@@ -149,13 +142,54 @@ export const spotifyRouter = createTRPCRouter({
       return getPlayHistory(ctx.accessToken, input.limit, input.cursor);
     }),
 
-  // getDailySong: publicProcedure.query(async () => {
-  //   const accessToken = await getSpotifyAccessToken();
-  //   if (!accessToken) {
-  //     throw new Error("No token available");
-  //   }
-  //   return selectAndStoreDailySong(accessToken);
-  // }),
+  fetchStorePlayHistory: spotifyAuthenticatedProcedure
+    .input(
+      z.object({
+        limit: z.number().optional().default(50),
+        cursor: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const historyItems = await fetchPlayHistory(ctx.accessToken, input.limit, input.cursor);
+      console.log("ITEMS -> \n", historyItems);
+      // Process and store each track in the database
+      await Promise.all(historyItems.map(async (item) => {
+        const { track, played_at } = item;
+        const imageUrl = track.album.images.length > 0 ? track.album.images[0].url : '';
+        const albumName = track.album.name;
+        const artists = track.artists.map(artist => artist.name).join(', '); // Joining artist names into a single string
+
+        return prisma.history.upsert({
+          where: { id: track.id },
+          update: {
+            name: track.name,
+            imageUrl,
+            albumName,
+            spotifyUrl: track.external_urls.spotify,
+            artists,
+            playedAt: new Date(played_at), // Adjusted to the actual play time
+            updatedAt: new Date(),
+          },
+          create: {
+            id: track.id,
+            name: track.name,
+            imageUrl,
+            albumName,
+            spotifyUrl: track.external_urls.spotify,
+            artists,
+            playedAt: new Date(played_at),
+            spotifyUserId,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        });
+      }));
+
+      return historyItems;
+    }),
+
+
+
 
   // New procedures
 

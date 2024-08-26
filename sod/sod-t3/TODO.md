@@ -12,6 +12,12 @@
   - consistency is the word here
 - replace all the denied access code with proper page/component
 - gameState seems to be overridden, fix it !
+- if played not logged display found song properly
+- dynamyc "Song" desing
+
+### MVP
+- more info in table
+- fetch search upon typing limit 1 char
 
 ## Landing page
 - Need to check the length of the search result, if there is any limit to it

@@ -19,60 +19,54 @@ export default function Player({ song, isFound }: PlayerProps) {
   const previewTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const initializePlayer = useCallback(() => {
-    if (!accessToken) return;
+  useEffect(() => {
+    // Define the global function for Spotify SDK
+    window.onSpotifyWebPlaybackSDKReady = () => {
+      if (!accessToken) {
+        console.error('Access token is not available.');
+        return;
+      }
 
+      const player = new window.Spotify.Player({
+        name: "Song of the Day Player",
+        getOAuthToken: cb => cb(accessToken),
+        volume: 0.5
+      });
+
+      player.addListener("ready", ({ device_id }) => {
+        console.log("Ready with Device ID", device_id);
+        deviceIdRef.current = device_id;
+        setIsReady(true);
+        setError(null);
+      });
+
+      player.addListener("not_ready", ({ device_id }) => {
+        console.log("Device ID has gone offline", device_id);
+        setIsReady(false);
+        setError("Device disconnected");
+      });
+
+      player.connect();
+      playerRef.current = player;
+    };
+
+    // Load the Spotify Web Playback SDK script
     const script = document.createElement("script");
     script.src = "https://sdk.scdn.co/spotify-player.js";
     script.async = true;
-
-    const onScriptLoad = () => {
-      if (window.Spotify) {
-        const player = new window.Spotify.Player({
-          name: "Song of the Day Player",
-          getOAuthToken: (cb) => cb(accessToken),
-          volume: 0.5,
-        });
-
-        player.addListener("ready", ({ device_id }) => {
-          console.log("Ready with Device ID", device_id);
-          deviceIdRef.current = device_id;
-          setIsReady(true);
-          setError(null);
-        });
-
-        player.addListener("not_ready", ({ device_id }) => {
-          console.log("Device ID has gone offline", device_id);
-          setIsReady(false);
-          setError("Device disconnected");
-        });
-
-        player.connect();
-        playerRef.current = player;
-      }
-    };
-
-    script.onload = onScriptLoad;
     document.body.appendChild(script);
 
+    // Cleanup
     return () => {
       if (playerRef.current) {
         playerRef.current.disconnect();
       }
       document.body.removeChild(script);
+      window.onSpotifyWebPlaybackSDKReady = undefined; // Cleanup the global function
     };
   }, [accessToken]);
 
-  useEffect(() => {
-    const cleanup = initializePlayer();
-    return cleanup;
-  }, [initializePlayer]);
-
-  const makeSpotifyRequest = async (
-    endpoint: string,
-    method: string,
-    body?: object
-  ) => {
+  const makeSpotifyRequest = async (endpoint: string, method: string, body?: object) => {
     if (!accessToken) throw new Error("No access token available");
 
     try {

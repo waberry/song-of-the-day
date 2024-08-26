@@ -146,6 +146,7 @@ export const spotifyAuthenticatedProcedure = t.procedure.use(
         ...ctx,
         accessToken: ctx.session.user.accessToken,
         refreshToken: ctx.session.user.refreshToken,
+        userId: ctx.session.user.id,
       },
     });
   },

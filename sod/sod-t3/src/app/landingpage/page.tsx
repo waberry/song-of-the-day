@@ -87,12 +87,12 @@ export default function LandingPage() {
   }, []);
 
   // useEffect(() => {
-  //     if (gameState?.dailySongFound) {
-  //       saveGameState(anonymousUserId, gameState).catch(err => {
-  //         console.error("Failed to save game state to the database:", err);
-  //       });
-  //     }
-  //   }, [gameState?.dailySongFound, anonymousUserId, gameState]);
+  //   if (gameState?.dailySongFound) {
+  //     saveGameState(anonymousUserId, gameState).catch(err => {
+  //       console.error("Failed to save game state to the database:", err);
+  //     });
+  //   }
+  // }, [gameState?.dailySongFound, anonymousUserId, gameState]);
 
   useEffect(() => {
     if (gameState?.dailySongFound) {
@@ -113,7 +113,7 @@ export default function LandingPage() {
 
     // Clean up the interval when the component unmounts or dependencies change
     return () => clearInterval(intervalId);
-  }, [gameState, anonymousUserId]);
+  }, [gameState?.dailySongFound, gameState, anonymousUserId]);
 
 
   useEffect(() => {

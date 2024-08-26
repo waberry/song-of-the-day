@@ -2,33 +2,37 @@
 import { db as prisma } from "~/server/db";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
-
-async function getTodaysGameState(anonymousUserId) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // set to start of today
-
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1); // set to start of tomorrow
-
-  const gameState = await prisma.gameState.findFirst({
-    where: {
-      anonymousUserId: anonymousUserId,
-      lastResetDate: {
-        gte: today,
-        lt: tomorrow,
-      },
-    },
-  });
-
-  return gameState;
+interface GameState {
+  pickedSongs: any[];
+  dailySongFound: boolean;
+  guessState: {
+    guessedCorrectly: boolean;
+    attempts: number;
+  };
+  lastResetDate: Date;
 }
 
-export async function getGameState(anonymousUserId: string) {
+export async function getGameState(anonymousUserId: string): Promise<any> {
   try {
-    let gameState = await prisma.gameState.findUnique({
-      where: { anonymousUserId },
+    // Fetch today's start time
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of today
+    // const tomorrow = new Date(today);
+    // tomorrow.setDate(tomorrow.getDate() + 1); // set to start of tomorrow
+
+    // Fetch the existing game state for today
+    let gameState = await prisma.gameState.findFirst({
+      where: {
+        anonymousUserId,
+        lastResetDate: {
+          gte: today,
+          lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+          // lt: tomorrow
+        },
+      },
     });
 
+    // If no game state exists for today, create a new one
     if (!gameState) {
       gameState = await prisma.gameState.create({
         data: {
@@ -36,26 +40,19 @@ export async function getGameState(anonymousUserId: string) {
           pickedSongs: [],
           dailySongFound: false,
           guessState: { guessedCorrectly: false, attempts: 0 },
-          lastResetDate: new Date(),
+          lastResetDate: today,
         },
       });
     }
-
+    console.log("\n Retrived Game State \n", gameState, "\n");
     return gameState;
   } catch (error) {
-    if (
-      error instanceof PrismaClientKnownRequestError &&
-      error.code === "P2002"
-    ) {
+    if (error instanceof PrismaClientKnownRequestError && error.code === "P2002") {
       console.error(
-        "Unique constraint violation on anonymousUserId. This should not happen with our current implementation.",
+        "Unique constraint violation on anonymousUserId. This should not happen with our current implementation."
       );
     }
-    // console.error("Error getting or creating game state:", error);
-    console.error(
-      "Detailed error in getGameState:",
-      JSON.stringify(error, null, 2),
-    );
+    console.error("Detailed error in getGameState:", JSON.stringify(error, null, 2));
     throw error;
   }
 }
@@ -77,57 +74,78 @@ export async function getCommonGameState() {
   }
 }
 
-interface GameState {
-  pickedSongs: any[];
-  dailySongFound: boolean;
-  guessState: {
-    guessedCorrectly: boolean;
-    attempts: number;
-  };
-  lastResetDate: Date;
-}
-
 async function updateGameStateWithRetry(
   anonymousUserId: string,
   newState: any,
   retries = 3,
-) {
+): Promise<any> {
   try {
-    // Fetch the current game state from the database
-    const currentGameState = await prisma.gameState.findUnique({
-      where: { anonymousUserId },
+    // Fetch today's start time
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of today
+
+    // Fetch the current game state for today
+    let currentGameState = await prisma.gameState.findFirst({
+      where: {
+        anonymousUserId,
+        lastResetDate: {
+          gte: today,
+          lt: new Date(today.getTime() + 24 * 60 * 60 * 1000), // Start of tomorrow
+        },
+      },
     });
 
     if (!currentGameState) {
-      throw new Error("Game state not found for the provided user ID.");
+      // Create a new game state if none exists for today
+      currentGameState = await prisma.gameState.create({
+        data: {
+          anonymousUserId,
+          pickedSongs: [],
+          dailySongFound: false,
+          guessState: { guessedCorrectly: false, attempts: 0 },
+          lastResetDate: today,
+          ...newState, // Include newState data if necessary
+        },
+      });
+    } else {
+      // Check if there's an actual change required
+      const isNewDay = currentGameState.lastResetDate.getTime() !== today.getTime();
+
+      if (!isNewDay && Object.keys(newState).length === 0) {
+        console.log("No update needed: It's not a new day and the local state is empty.");
+        return currentGameState; // Return the current state without making any changes
+      }
+
+      // Proceed with the update if necessary
+      // Destructure `id` out and gather the rest
+      // in data to avoid unique constraint violation
+      const { id, ...restCurrentGameState } = currentGameState;
+      const { newStateId, ...restNewState } = newState;//ye
+
+      currentGameState = await prisma.gameState.update({
+        where: {
+          id, // Locate the record by `id`
+        },
+        data: {
+          // Apply changes but ensure that `id` is not included
+          ...restNewState,
+        },
+      });
+
     }
 
-    // Check if it's a new day or if the local state is not empty
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const isNewDay = currentGameState.lastResetDate.getTime() !== today.getTime();
-
-    if (!isNewDay && Object.keys(newState).length === 0) {
-      console.log("No update needed: It's not a new day and the local state is empty.");
-      return currentGameState; // Return the current state without making any changes
-    }
-
-    // Proceed with the update if necessary
-    const updatedGameState = await prisma.gameState.update({
-      where: { anonymousUserId },
-      data: newState,
-    });
-
-    return updatedGameState;
+    return currentGameState;
   } catch (error) {
-    if (retries > 0 && error.code === "08P01") {
+    if (retries > 0 && error?.code === "08P01") {
       console.log(`Retrying update operation. Attempts left: ${retries - 1}`);
       await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for 1 second before retrying
       return updateGameStateWithRetry(anonymousUserId, newState, retries - 1);
     }
+    console.error("Error in updateGameStateWithRetry:", error);
     throw error;
   }
 }
+
 
 export async function updateGameState(anonymousUserId: string, newState: any) {
   return updateGameStateWithRetry(anonymousUserId, newState);
@@ -136,9 +154,9 @@ export async function updateGameState(anonymousUserId: string, newState: any) {
 export async function saveGameState(
   anonymousUserId: string,
   gameState: GameState,
-) {
+): Promise<any> {
   try {
-    // Fetch the current game state from the database
+    // Get or create today's game state
     const currentGameState = await getGameState(anonymousUserId);
 
     if (!currentGameState) {
@@ -150,12 +168,13 @@ export async function saveGameState(
     today.setHours(0, 0, 0, 0);
     const isNewDay = currentGameState.lastResetDate.getTime() !== today.getTime();
 
+    console.log("SAVING STATE --->", gameState);
     if (!isNewDay && Object.keys(gameState).length === 0) {
+      console.log("Empty localstorage ! ---!!!!");
       console.log("No update needed: It's not a new day and the local state is empty.");
-      return currentGameState; // Return the current state without making any changes
+      return currentGameState; // Return the current state without making changes
     }
 
-    // If an update is needed, proceed with the update
     const updatedGameState = await updateGameState(anonymousUserId, gameState);
 
     return updatedGameState;
@@ -164,7 +183,6 @@ export async function saveGameState(
     throw error;
   }
 }
-
 
 export async function getDailySong() {
   const today = new Date();
@@ -198,80 +216,6 @@ export async function getDailySong() {
   }
   return restructureTrack(dailySong.track);
 }
-// export async function getDailySong() {
-//   const today = new Date();
-//   today.setHours(0, 0, 0, 0);
-
-//   try {
-//     // First, try to find an existing DailySong for today
-//     let dailySong = await prisma.dailySong.findFirst({
-//       where: { selectedDate: today },
-//       include: {
-//         track: {
-//           include: {
-//             album: {
-//               include: {
-//                 images: true,
-//               },
-//             },
-//             artists: {
-//               include: {
-//                 artist: {
-//                   include: {
-//                     images: true,
-//                   },
-//                 },
-//               },
-//             },
-//           },
-//         },
-//       },
-//     });
-
-//     // If no DailySong exists for today, create a new one
-//     if (!dailySong) {
-//       // Logic to select a new track goes here
-//       const newTrack = await selectNewTrack();
-
-//       dailySong = await prisma.dailySong.create({
-//         data: {
-//           trackId: newTrack.id,
-//           selectedDate: today,
-//         },
-//         include: {
-//           track: {
-//             include: {
-//               album: {
-//                 include: {
-//                   images: true,
-//                 },
-//               },
-//               artists: {
-//                 include: {
-//                   artist: {
-//                     include: {
-//                       images: true,
-//                     },
-//                   },
-//                 },
-//               },
-//             },
-//           },
-//         },
-//       });
-//     }
-
-//     if (!dailySong) {
-//       console.log("Cannot find or create dailySong");
-//       return null;
-//     }
-
-//     return restructureTrack(dailySong.track);
-//   } catch (error) {
-//     console.error("Error in getDailySong:", error);
-//     throw error;
-//   }
-// }
 
 function restructureTrack(track) {
   return {
