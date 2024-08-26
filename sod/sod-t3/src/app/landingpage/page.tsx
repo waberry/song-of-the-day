@@ -34,14 +34,18 @@ export default function LandingPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [anonymousUserId, setAnonymousUserId] = useState<string | null>(null);
+
+  // Query to fetch filtered songs
   const {
     data: filteredSongs = [],
     isFetching,
     isLoading: searchLoading,
     error: searchError,
   } = api.spotify.searchTracks.useQuery(
-    { searchTerm: submittedSearchTerm },
-    { enabled: !!submittedSearchTerm },
+    { searchTerm: searchTerm },
+    {
+      enabled: !!searchTerm,
+    }
   );
 
   useEffect(() => {
@@ -193,36 +197,34 @@ export default function LandingPage() {
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSubmittedSearchTerm("");
     if (gameState?.dailySongFound) return;
 
     setSearchTerm(e.target.value.toLowerCase());
-    setDropdownVisible(false);
+    setSubmittedSearchTerm(searchTerm);
+    if (searchTerm.trim() === "") return;
+    setDropdownVisible(true);
   };
 
-  const handleFocus = () => {
-    if (gameState?.dailySongFound) return;
-    if (submittedSearchTerm.trim() !== "") {
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (searchTerm.trim() !== "") {
       setDropdownVisible(true);
     } else {
       setDropdownVisible(false);
     }
+    if (gameState?.dailySongFound) return;
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (gameState?.dailySongFound) return;
-    if (!searchTerm.trim()) return;
-    if (submittedSearchTerm.trim() === searchTerm.trim()) return;
-    setSubmittedSearchTerm(searchTerm);
-    setDropdownVisible(true);
+    if (searchTerm.trim() === "") return;
+    handleSearch(e);
   };
 
   const handleBlur = () => {
-    setTimeout(() => {
-      setSubmittedSearchTerm("");
-      setDropdownVisible(false);
-    }, 200);
+    // setTimeout(() => {
+    //   setSubmittedSearchTerm("");
+    //   setDropdownVisible(false);
+    // }, 200);
   };
 
   const handleDDSelect = async (song) => {
@@ -380,7 +382,7 @@ export default function LandingPage() {
                 >
                   {isLoading || isFetching ? (
                     <li className="p-2 text-center">
-                      <FontAwesomeIcon icon={faSpinner} spin /> Loading...
+                      <FontAwesomeIcon icon={faSpinner} spin /> Searching...
                     </li>
                   ) : searchError ? (
                     <li className="p-2 text-center text-red-500">

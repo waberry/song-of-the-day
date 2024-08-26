@@ -31,6 +31,7 @@ export const spotifyRouter = createTRPCRouter({
   searchTracks: publicProcedure
     .input(z.object({ searchTerm: z.string().min(1) }))
     .query(async ({ input }) => {
+      console.log("SEARCH INPUT: ", input);
       try {
         const spotifyAccessToken = await getSpotifyAccessToken();
         if (!spotifyAccessToken) {
