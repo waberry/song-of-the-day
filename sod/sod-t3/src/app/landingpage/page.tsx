@@ -196,35 +196,41 @@ export default function LandingPage() {
     return commonMetadata;
   };
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearch = (value: string) => {
     if (gameState?.dailySongFound) return;
+    console.log("EVENT: ", value);
 
-    setSearchTerm(e.target.value.toLowerCase());
+    setSearchTerm(value.toLowerCase());
     setSubmittedSearchTerm(searchTerm);
     if (searchTerm.trim() === "") return;
     setDropdownVisible(true);
   };
 
-  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+  const handleFocus = (value: React.FocusEvent<HTMLInputElement>) => {
+    if (gameState?.dailySongFound) return;
     if (searchTerm.trim() !== "") {
       setDropdownVisible(true);
     } else {
       setDropdownVisible(false);
     }
-    if (gameState?.dailySongFound) return;
+
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (searchTerm.trim() === "") return;
-    handleSearch(e);
-  };
+      e.preventDefault(); // Prevent the default form submission
+
+      const form = e.currentTarget; // Reference to the form element
+      const input = form.elements.namedItem('searchInput') as HTMLInputElement; // Adjust 'searchInput' to your input's name attribute
+      const inputValue = input ? input.value : '';
+
+      handleSearch(inputValue);
+    };
 
   const handleBlur = () => {
-    // setTimeout(() => {
-    //   setSubmittedSearchTerm("");
-    //   setDropdownVisible(false);
-    // }, 200);
+    setTimeout(() => {
+      setSubmittedSearchTerm("");
+      setDropdownVisible(false);
+    }, 200);
   };
 
   const handleDDSelect = async (song) => {
@@ -345,7 +351,7 @@ export default function LandingPage() {
                     ? "Today's song found!"
                     : "Search by artist or title"
                 }
-                onChange={handleSearch}
+                onChange={(e) => handleSearch(e.target.value)}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
                 value={searchTerm}
