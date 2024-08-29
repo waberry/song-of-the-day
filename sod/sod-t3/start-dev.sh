@@ -9,4 +9,5 @@ echo "Database is up - executing command"
 npx prisma generate
 npx prisma migrate deploy
 echo "Migrations applied"
-npm run dev -- --turbo
+npm run build
+npm run start
