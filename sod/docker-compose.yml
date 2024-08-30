@@ -29,6 +29,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    restart: always
 
   db:
     networks:
@@ -45,6 +46,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: always
 
 networks:
   app-network:
