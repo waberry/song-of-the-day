@@ -9,6 +9,7 @@ COPY sod-t3/package*.json ./
 
 # Install dependencies
 RUN npm install
+RUN npm outdated
 
 # Copy the rest of the application
 COPY sod-t3 .
