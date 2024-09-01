@@ -9,5 +9,4 @@ npx prisma generate
 npx prisma migrate deploy
 echo "Migrations applied"
 
-npm run build
-npm run start
+npm run dev -- --turbo
