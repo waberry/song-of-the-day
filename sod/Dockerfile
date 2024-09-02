@@ -4,6 +4,8 @@ WORKDIR /app
 # Install necessary tools
 RUN apk add --no-cache postgresql-client
 
+RUN apk add --no-cache curl
+
 # Copy package files
 COPY sod-t3/package*.json ./
 
