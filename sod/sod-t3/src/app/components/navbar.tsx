@@ -51,10 +51,10 @@ export default function Navbar() {
       <div className="flex items-center justify-between px-4 py-2">
         <Link href="/" className="text-xl font-bold" aria-label="Home">
           <Image
-            src="/images/simpleLogo.png"
+            src="/sod-t3/public/simpleLogo.png"
             alt=""
-            width={50}
-            height={20}
+            width={150} // Adjust width as needed
+            height={40} // Adjust height as needed
             className="object-contain"
           />
         </Link>
