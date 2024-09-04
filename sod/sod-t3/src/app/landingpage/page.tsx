@@ -20,6 +20,7 @@ import LoadingScreen from "../components/loadingScreen";
 // import ErrorDisplay from "../components/ErrorDisplay";
 import { PlayerProvider } from "../components/PlayerContext";
 import { getAnonymousUserId } from "~/utils/anonymousUserId";
+import {SongComparisonTable} from "../components/SongComparisonTable";
 
 export default function LandingPage() {
   const { data: session } = useSession();
@@ -426,105 +427,9 @@ export default function LandingPage() {
           </form>
         </div>
 
-        {/* Picked songs table */}
-        {gameState?.pickedSongs.length > 0 && (
-          <div className="container mx-auto">
-            <div className="mt-8 w-full overflow-x-auto">
-              <div className="max-h-[400px] overflow-y-auto overscroll-contain rounded-lg pr-2 shadow">
-                <table className="min-w-full divide-y divide-indigo-200">
-                  <thead className="sticky top-0 bg-indigo-100">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-indigo-700">
-                        Cover
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-indigo-700">
-                        Title
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-indigo-700">
-                        Artist
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-indigo-700">
-                        Hints
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-indigo-200 bg-white">
-                    {gameState.pickedSongs.map((song) => (
-                      <tr key={song.id}>
-                        <td className="whitespace-nowrap px-6 py-4">
-                          <img
-                            src={song.album.images[0].url}
-                            width={50}
-                            height={50}
-                            alt=""
-                            className="rounded-md"
-                          />
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4">
-                          <div className="text-sm font-medium text-gray-300">
-                            {song.name}
-                          </div>
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4">
-                          <div className="text-sm text-gray-400">
-                            {song.artists[0].name}
-                          </div>
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4">
-                          {song.isCorrectGuess ? (
-                            <span className="mr-2 rounded-full bg-green-500 px-2 py-1 text-xs font-bold">
-                              Correct Guess!
-                            </span>
-                          ) : (
-                            song.commonMetadata && (
-                              <div>
-                                {song.commonMetadata.sameArtist && (
-                                  <span className="mr-2 rounded-full bg-green-500 px-2 py-1 text-xs">
-                                    Same Artist
-                                  </span>
-                                )}
-                                {song.commonMetadata.sameAlbum && (
-                                  <span className="mr-2 rounded-full bg-blue-500 px-2 py-1 text-xs">
-                                    Same Album
-                                  </span>
-                                )}
-                                {song.commonMetadata.sameYear && (
-                                  <span className="mr-2 rounded-full bg-yellow-500 px-2 py-1 text-xs">
-                                    Same Year
-                                  </span>
-                                )}
-                                {song.commonMetadata.sameGenre && (
-                                  <span className="mr-2 rounded-full bg-purple-500 px-2 py-1 text-xs">
-                                    Same Genre
-                                  </span>
-                                )}
-                                {song.commonMetadata.sameDecade && (
-                                  <span className="mr-2 rounded-full bg-pink-500 px-2 py-1 text-xs">
-                                    Same Decade
-                                  </span>
-                                )}
-                                {song.commonMetadata.popularityDifference && (
-                                  <span className="mr-2 rounded-full bg-indigo-500 px-2 py-1 text-xs">
-                                    Similar Popularity
-                                  </span>
-                                )}
-                                {song.commonMetadata.sameDuration && (
-                                  <span className="mr-2 rounded-full bg-teal-500 px-2 py-1 text-xs">
-                                    Similar Duration
-                                  </span>
-                                )}
-                              </div>
-                            )
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
+      <div>
+        <SongComparisonTable selectedSong={pickedSongs} dailySong={dailySong} />
+      </div>
       </main>
     </PlayerProvider>
   );
