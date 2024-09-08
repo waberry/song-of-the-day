@@ -1,96 +1,140 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { getDetailedSongComparison, ComparisonKey } from '~/utils/gameUtils';
+import { GameState } from '~/types/types';
+import { trackType as Song } from "~/types/spotify.types";
+import { Check, X, Music, Disc, Calendar, Clock, BarChart2, Tag, ChevronRight } from 'lucide-react';
 
-const SongComparisonTable = ({ selectedSong, dailySong }) => {
-  const compareSongs = (selectedSong, dailySong) => {
-    const feedback = [];
+interface SongComparisonTableProps {
+  gameState: GameState | null;
+  dailySong: Song | null;
+}
 
-    // Compare artists
-    const artistMatch = selectedSong.artists.some(artist =>
-      dailySong.artists.some(dailyArtist => dailyArtist.name.toLowerCase() === artist.name.toLowerCase())
+const SongComparisonTable: React.FC<SongComparisonTableProps> = ({ gameState, dailySong }) => {
+  if (!gameState || !dailySong) {
+    return null;
+  }
+
+  const [slideStates, setSlideStates] = useState<{ [key: string]: boolean }>({});
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const rowRefs = useRef<{ [key: string]: HTMLTableRowElement | null }>({});
+  const getComparisonIcon = (result: boolean) => {
+    return result ? (
+      <Check className="text-green-500" size={20} />
+    ) : (
+      <X className="text-red-500" size={20} />
     );
-    feedback.push({
-      attribute: 'Artist',
-      comparison: artistMatch ? 'Same Artist' : 'Different Artist',
-    });
-
-    // Compare album names
-    feedback.push({
-      attribute: 'Album',
-      comparison: selectedSong.album.name.toLowerCase() === dailySong.album.name.toLowerCase()
-        ? 'Same Album'
-        : 'Different Album',
-    });
-
-    // Compare release years
-    const releaseYearMatch = new Date(selectedSong.album.release_date).getFullYear() ===
-                             new Date(dailySong.album.release_date).getFullYear();
-    feedback.push({
-      attribute: 'Year',
-      comparison: releaseYearMatch ? 'Same Year' : 'Different Year',
-    });
-
-    // Compare genres
-    const genreMatch = selectedSong.genres && dailySong.genres
-      ? selectedSong.genres.some(genre =>
-          dailySong.genres.some(dailyGenre =>
-            dailyGenre.toLowerCase().includes(genre.toLowerCase()) ||
-            genre.toLowerCase().includes(dailyGenre.toLowerCase())
-          )
-        )
-      : false;
-    feedback.push({
-      attribute: 'Genre',
-      comparison: genreMatch ? 'Same Genre' : 'Different Genre',
-    });
-
-    // Compare release decades
-    const decadeMatch = Math.floor(new Date(selectedSong.album.release_date).getFullYear() / 10) ===
-                         Math.floor(new Date(dailySong.album.release_date).getFullYear() / 10);
-    feedback.push({
-      attribute: 'Decade',
-      comparison: decadeMatch ? 'Same Decade' : 'Different Decade',
-    });
-
-    // Compare popularity
-    const popularityDifference = Math.abs(selectedSong.popularity - dailySong.popularity);
-    feedback.push({
-      attribute: 'Popularity',
-      comparison: popularityDifference <= 10
-        ? 'Similar Popularity'
-        : 'Different Popularity',
-    });
-
-    // Compare duration
-    const durationDifference = Math.abs(selectedSong.duration_ms - dailySong.duration_ms);
-    feedback.push({
-      attribute: 'Duration',
-      comparison: durationDifference <= 10000
-        ? 'Similar Duration'
-        : 'Different Duration',
-    });
-
-    return feedback;
   };
 
-  const feedback = compareSongs(selectedSong, dailySong);
+  const getComparison = (key: ComparisonKey) => {
+    switch (key) {
+      case ComparisonKey.Artist: return <Music size={20} />;
+      case ComparisonKey.Album: return <Disc size={20} />;
+      case ComparisonKey.Year: return <Calendar size={20} />;
+      case ComparisonKey.Genre: return <Tag size={20} />;
+      case ComparisonKey.Popularity: return <BarChart2 size={20} />;
+      case ComparisonKey.Duration: return <Clock size={20} />;
+      default: return null;
+    }
+  };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => setTouchEnd(e.targetTouches[0].clientX);
+
+  const handleTouchEnd = (songId: string) => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+    if (isLeftSwipe || isRightSwipe) {
+      setSlideStates(prev => ({ ...prev, [songId]: isLeftSwipe }));
+    }
+  };
   return (
-    <div className="container mx-auto mt-8 w-full overflow-x-auto">
-      <div className="max-h-[400px] overflow-y-auto rounded-lg shadow">
-        <table className="min-w-full divide-y divide-indigo-200">
-          <thead className="sticky top-0 bg-indigo-100">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-indigo-700">Attribute</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-indigo-700">Comparison</th>
+    <div className="container w-full mx-auto">      
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-indigo-100 text-indigo-700 text-xs">
+              <th className="p-2 text-left">Song</th>
+              <th className="p-2 text-left hidden sm:table-cell">Artist</th>
+              <th className="p-2 text-left hidden sm:table-cell">Hints</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-indigo-200 bg-white">
-            {feedback.map((item, index) => (
-              <tr key={index}>
-                <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-700">{item.attribute}</td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{item.comparison}</td>
-              </tr>
-            ))}
+          <tbody>
+            {gameState.pickedSongs.map( (song, index) => {
+              const detailedComparison = getDetailedSongComparison(song, dailySong);
+              const isSlided = slideStates[song.id] || false;
+
+              return (
+                <tr 
+                  key={song.id} 
+                  ref={el => rowRefs.current[song.id] = el}
+                  className={`border-b ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'} relative`}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={() => handleTouchEnd(song.id)}
+                >
+                  <td className="p-2 sm:w-1/4">
+                    <div className="flex items-center space-x-2">
+                      <img
+                        src={song.album.images[0]?.url}
+                        alt={`${song.name} cover`}
+                        className="w-10 h-10 object-cover rounded-sm shadow"
+                      />
+                      <span className="font-medium text-sm truncate">{song.name}</span>
+                    </div>
+                  </td>
+                  <td className="p-2 hidden sm:table-cell sm:w-1/4">
+                    <span className="text-sm truncate">{song.artists[0]?.name}</span>
+                  </td>
+                  <td className="p-2 hidden sm:table-cell sm:w-1/2">
+                    <div className="grid grid-cols-3 gap-1">
+                      {Object.entries(detailedComparison).map(([key, value]) => (
+                        <div key={key} className="flex items-center space-x-1 text-xs">
+                          {getComparisonIcon(value.result)}
+                          {getComparison(key as ComparisonKey)}
+                          <span className="truncate" title={value.message}>
+                            {value.message}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </td>
+                  <td 
+                    className={`absolute top-0 right-0 h-full bg-gray-100 transition-transform duration-300 ease-in-out transform sm:hidden ${
+                      isSlided ? 'translate-x-0' : 'translate-x-full'
+                    }`}
+                    style={{ width: 'calc(100% - 40px)' }}
+                  >
+                    <div className="p-2 h-full overflow-y-auto">
+                      <div className="grid grid-cols-1 gap-1">
+                        {Object.entries(detailedComparison).map(([key, value]) => (
+                          <div key={key} className="flex items-center space-x-1 text-xs">
+                            {getComparisonIcon(value.result)}
+                            {getComparison(key as ComparisonKey)}
+                            <span className="truncate" title={value.message}>
+                              {value.message}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </td>
+                  <div 
+                    className={`absolute top-0 right-0 h-full flex items-center justify-center bg-indigo-100 text-indigo-500 sm:hidden ${
+                      isSlided ? 'hidden' : 'w-10'
+                    }`}
+                  >
+                    <ChevronRight size={20} />
+                  </div>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

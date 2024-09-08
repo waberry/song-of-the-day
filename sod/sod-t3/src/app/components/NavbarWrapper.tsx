@@ -6,9 +6,7 @@ export default async function NavbarWrapper() {
   const session = await getServerSession(authOptions);
   return (
     <>
-      <div>
-        <Navbar session={session} />;
-      </div>
+      <Navbar session={session} />
     </>
   );
 }

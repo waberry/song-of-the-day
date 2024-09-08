@@ -14,7 +14,6 @@ const SEPARATOR = "::";
 function getFingerprint() {
   const parser = new UAParser();
   const result = parser.getResult();
-  console.log("RESULT: ----->\n", result);
   const fingerprintData = {
     userAgent: result.ua,
     browser: result.browser.name,

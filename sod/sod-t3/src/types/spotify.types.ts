@@ -69,6 +69,7 @@ export type trackType = {
     ];
     name: string;
     release_date: string;
+    releaseDate: string;
     release_date_precision: string;
     total_tracks: number;
     type: string;

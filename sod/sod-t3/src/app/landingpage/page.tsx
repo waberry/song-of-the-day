@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -11,55 +11,48 @@ import {
   getGameState,
   getCommonGameState,
   getDailySong,
-  updateGameState,
   saveGameState,
 } from "../actions/gameActions";
 import { api } from "~/trpc/react";
 import Player from "../components/Player";
 import LoadingScreen from "../components/loadingScreen";
-// import ErrorDisplay from "../components/ErrorDisplay";
+import ErrorDisplay from "../components/ErrorDisplay";
 import { PlayerProvider } from "../components/PlayerContext";
 import { getAnonymousUserId } from "~/utils/anonymousUserId";
-import {SongComparisonTable} from "../components/SongComparisonTable";
+import SongComparisonTable from "../components/SongComparisonTable";
+import { trackType as Song } from "~/types/spotify.types";
+import { GameState } from "~/types/types";
+import { isCorrectGuess, getDetailedSongComparison as compareSongs } from "~/utils/gameUtils";
 
 export default function LandingPage() {
   const { data: session } = useSession();
-  const [isClient, setIsClient] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [submittedSearchTerm, setSubmittedSearchTerm] = useState("");
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [commonGameState, setCommonGameState] = useState(null);
-  const [gameState, setGameState] = useState(null);
-  const [dailySong, setDailySong] = useState(null);
+  const [gameState, setGameState] = useState<GameState | null>(null);
+  const [dailySong, setDailySong] = useState<Song | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [anonymousUserId, setAnonymousUserId] = useState<string | null>(null);
 
-  // Query to fetch filtered songs
-  const {
-    data: filteredSongs = [],
-    isFetching,
-    isLoading: searchLoading,
-    error: searchError,
-  } = api.spotify.searchTracks.useQuery(
-    { searchTerm: searchTerm },
+  const searchTracksQuery = api.spotify.searchTracks.useQuery(
+    { searchTerm },
     {
       enabled: !!searchTerm,
     }
   );
 
   useEffect(() => {
-    setIsClient(true);
     async function initializeGameState() {
       try {
-        const userId = await getAnonymousUserId(); // Ensures asynchronous handling
+        const userId = await getAnonymousUserId();
         setAnonymousUserId(userId);
         const commonState = await getCommonGameState();
         setCommonGameState(commonState);
         const today = new Date();
         const gameStateFromStorage = localStorage.getItem(`gameState_${userId}`);
-        let currentGameState;
+        let currentGameState: GameState;
 
         if (gameStateFromStorage) {
           const parsedGameState = JSON.parse(gameStateFromStorage);
@@ -79,7 +72,6 @@ export default function LandingPage() {
         setGameState(currentGameState);
         const dailySong = await getDailySong();
         setDailySong(dailySong);
-
       } catch (err) {
         console.error("Initialization error:", err);
         setError("Failed to load game data. Please try again later.");
@@ -91,22 +83,13 @@ export default function LandingPage() {
     initializeGameState();
   }, []);
 
-  // useEffect(() => {
-  //   if (gameState?.dailySongFound) {
-  //     saveGameState(anonymousUserId, gameState).catch(err => {
-  //       console.error("Failed to save game state to the database:", err);
-  //     });
-  //   }
-  // }, [gameState?.dailySongFound, anonymousUserId, gameState]);
-
   useEffect(() => {
-    if (gameState?.dailySongFound) {
+    if (gameState?.dailySongFound && anonymousUserId) {
       saveGameState(anonymousUserId, gameState).catch(err => {
         console.error("Failed to save game state to the database:", err);
       });
     }
 
-    // Set up an interval to save the game state every minute
     const intervalId = setInterval(() => {
       if (gameState && anonymousUserId) {
         console.log("Automatically saving game state to the database...");
@@ -114,12 +97,10 @@ export default function LandingPage() {
           console.error("Failed to periodically save game state:", err);
         });
       }
-    }, 60000); // 60000 milliseconds = 1 minute
+    }, 60000);
 
-    // Clean up the interval when the component unmounts or dependencies change
     return () => clearInterval(intervalId);
-  }, [gameState?.dailySongFound, gameState, anonymousUserId]);
-
+  }, [gameState, anonymousUserId]);
 
   useEffect(() => {
     if (showPopup) {
@@ -130,25 +111,16 @@ export default function LandingPage() {
     }
   }, [showPopup]);
 
-  const isNewDay = (lastResetDate: Date) => {
-    const now = new Date();
-    return (
-      now.getDate() !== lastResetDate.getDate() ||
-      now.getMonth() !== lastResetDate.getMonth() ||
-      now.getFullYear() !== lastResetDate.getFullYear()
-    );
-  };
-
   useEffect(() => {
     if (anonymousUserId && gameState) {
       localStorage.setItem(
         `gameState_${anonymousUserId}`,
-        JSON.stringify(gameState),
+        JSON.stringify(gameState)
       );
     }
   }, [gameState, anonymousUserId]);
 
-  const resetClientGameState = async (userId) => {
+  const resetClientGameState = async (userId: string): Promise<GameState> => {
     const newGameState = {
       pickedSongs: [],
       dailySongFound: false,
@@ -159,83 +131,31 @@ export default function LandingPage() {
     return newGameState;
   };
 
-  const compareSongs = (selectedSong, dailySong) => {
-    const commonMetadata = {
-      sameArtist: selectedSong.artists.some((artist) =>
-        dailySong.artists.some(
-          (dailyArtist) =>
-            dailyArtist.name.toLowerCase() === artist.name.toLowerCase(),
-        ),
-      ),
-      sameAlbum:
-        selectedSong.album.name.toLowerCase() ===
-        dailySong.album.name.toLowerCase(),
-      sameYear:
-        new Date(selectedSong.album.release_date).getFullYear() ===
-        new Date(dailySong.album.release_date).getFullYear(),
-      sameGenre:
-        selectedSong.genres && dailySong.genres
-          ? selectedSong.genres.some((genre) =>
-              dailySong.genres.some(
-                (dailyGenre) =>
-                  dailyGenre.toLowerCase().includes(genre.toLowerCase()) ||
-                  genre.toLowerCase().includes(dailyGenre.toLowerCase()),
-              ),
-            )
-          : false,
-      sameDecade:
-        Math.floor(
-          new Date(selectedSong.album.release_date).getFullYear() / 10,
-        ) ===
-        Math.floor(new Date(dailySong.album.release_date).getFullYear() / 10),
-      popularityDifference:
-        Math.abs(selectedSong.popularity - dailySong.popularity) <= 10,
-      sameDuration:
-        Math.abs(selectedSong.duration_ms - dailySong.duration_ms) <= 10000,
-    };
-
-    return commonMetadata;
-  };
-
   const handleSearch = (value: string) => {
     if (gameState?.dailySongFound) return;
-    console.log("EVENT: ", value);
-
-    setSearchTerm(value.toLowerCase());
-    setSubmittedSearchTerm(searchTerm);
-    if (searchTerm.trim() === "") return;
-    setDropdownVisible(true);
-  };
-
-  const handleFocus = (value: React.FocusEvent<HTMLInputElement>) => {
-    if (gameState?.dailySongFound) return;
-    if (searchTerm.trim() !== "") {
+    setSearchTerm(value.toLowerCase())
+    if (value.trim() !== "") {
       setDropdownVisible(true);
     } else {
       setDropdownVisible(false);
     }
-
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault(); // Prevent the default form submission
-
-      const form = e.currentTarget; // Reference to the form element
-      const input = form.elements.namedItem('searchInput') as HTMLInputElement; // Adjust 'searchInput' to your input's name attribute
-      const inputValue = input ? input.value : '';
-
-      handleSearch(inputValue);
-    };
+  const handleFocus = () => {
+    if (gameState?.dailySongFound) return;
+    if (searchTerm.trim() !== "") {
+      setDropdownVisible(true);
+    }
+  };
 
   const handleBlur = () => {
     setTimeout(() => {
-      setSubmittedSearchTerm("");
       setDropdownVisible(false);
     }, 200);
   };
 
-  const handleDDSelect = async (song) => {
-    if (!anonymousUserId || !gameState) return;
+  const handleDDSelect = async (song: Song) => {
+    if (!anonymousUserId || !gameState || !dailySong) return;
     if (gameState.pickedSongs.some((pickedSong) => pickedSong.id === song.id)) {
       setShowPopup(true);
       return;
@@ -244,8 +164,9 @@ export default function LandingPage() {
     const commonMetadata = correct ? null : compareSongs(song, dailySong);
 
     const newPickedSongs = [
-      ...gameState.pickedSongs,
+      
       { ...song, commonMetadata, isCorrectGuess: correct },
+      ...gameState.pickedSongs,
     ];
     const newGuessState = {
       guessedCorrectly: correct || gameState.guessState.guessedCorrectly,
@@ -265,40 +186,17 @@ export default function LandingPage() {
     setSearchTerm("");
   };
 
-  const isCorrectGuess = (selectedSong, dailySong) => {
-    if (selectedSong.id === dailySong.id) {
-      return true;
-    }
-
-    const nameMatch =
-      selectedSong.name.toLowerCase() === dailySong.name.toLowerCase();
-    const artistMatch = selectedSong.artists.some((artist) =>
-      dailySong.artists.some(
-        (dailyArtist) =>
-          dailyArtist.name.toLowerCase() === artist.name.toLowerCase(),
-      ),
-    );
-    const durationMatch =
-      Math.abs(selectedSong.duration_ms - dailySong.duration_ms) <= 2000;
-    const albumMatch =
-      selectedSong.album.name.toLowerCase() ===
-      dailySong.album.name.toLowerCase();
-
-    return nameMatch && artistMatch && (durationMatch || albumMatch);
-  };
-
   if (isLoading) {
     return <LoadingScreen />;
   }
 
   if (error) {
-    return; //<ErrorDisplay message = { "Failed to load"} />;
+    return <ErrorDisplay message={error} />;
   }
 
   return (
     <PlayerProvider>
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-sky-400 to-indigo-800 text-indigo-900">
-        {/* Popup for already added song */}
         {showPopup && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="rounded bg-pink-500 px-4 py-2 text-white shadow-lg">
@@ -308,7 +206,6 @@ export default function LandingPage() {
         )}
 
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-          {/* Game status messages */}
           {gameState?.dailySongFound ? (
             <div className="mb-4 text-center">
               <h2 className="text-2xl font-bold text-emerald-400">
@@ -317,15 +214,12 @@ export default function LandingPage() {
               <p className="text-white">You've found today's song!</p>
             </div>
           ) : (
-            isClient && (
-              <p className="text-white">
-                Song of the day is hidden. Try to guess it! Attempts:{" "}
-                {gameState?.pickedSongs.length || 0}
-              </p>
-            )
+            <p className="text-white">
+              Song of the day is hidden. Try to guess it! Attempts:{" "}
+              {gameState?.pickedSongs.length || 0}
+            </p>
           )}
 
-          {/* Player component */}
           <div>
             <Player
               song={dailySong}
@@ -334,102 +228,97 @@ export default function LandingPage() {
             />
           </div>
 
-          {/* Title */}
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
             What is the <span className="text-emerald-300">song</span> of the
             day
           </h1>
         </div>
 
-        {/* Search form */}
         <div className="container mx-auto mb-4">
-          <form onSubmit={handleSubmit}>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder={
-                  gameState?.dailySongFound
-                    ? "Today's song found!"
-                    : "Search by artist or title"
-                }
-                onChange={(e) => handleSearch(e.target.value)}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-                value={searchTerm}
-                disabled={gameState?.dailySongFound}
-                className={`h-12 w-full rounded-full pl-12 pr-4 text-base transition-all duration-300 ease-in-out
-                    ${
-                      gameState?.dailySongFound
-                        ? "cursor-not-allowed border-gray-300 bg-gray-100 text-gray-400"
-                        : "border-indigo-300 bg-white text-gray-800 shadow-md hover:shadow-lg focus:border-indigo-500 focus:shadow-lg"
-                    } border-2 outline-none`}
-                aria-expanded={dropdownVisible}
-                aria-haspopup="listbox"
+          <div className="relative">
+            <input
+              type="text"
+              placeholder={
+                gameState?.dailySongFound
+                  ? "Today's song found!"
+                  : "Search by artist or title"
+              }
+              onChange={(e) => handleSearch(e.target.value)}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              value={searchTerm}
+              disabled={gameState?.dailySongFound}
+              className={`h-12 w-full rounded-full pl-12 pr-4 text-base transition-all duration-300 ease-in-out
+                  ${
+                    gameState?.dailySongFound
+                      ? "cursor-not-allowed border-gray-300 bg-gray-100 text-gray-400"
+                      : "border-indigo-300 bg-white text-gray-800 shadow-md hover:shadow-lg focus:border-indigo-500 focus:shadow-lg"
+                  } border-2 outline-none`}
+              aria-expanded={dropdownVisible}
+              aria-haspopup="listbox"
+            />
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+              <FontAwesomeIcon
+                icon={faSearch}
+                className={`text-xl ${gameState?.dailySongFound ? "text-gray-400" : "text-indigo-500"}`}
               />
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                <FontAwesomeIcon
-                  icon={faSearch}
-                  className={`text-xl ${gameState?.dailySongFound ? "text-gray-400" : "text-indigo-500"}`}
-                />
-              </div>
-              {!gameState?.dailySongFound && searchTerm && (
-                <button
-                  type="button"
-                  onClick={() => setSearchTerm("")}
-                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600"
-                >
-                  <FontAwesomeIcon icon={faTimes} className="text-lg" />
-                </button>
-              )}
-              {/* Dropdown for search results */}
-              {dropdownVisible && (
-                <ul
-                  className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white shadow-lg"
-                  role="listbox"
-                >
-                  {isLoading || isFetching ? (
-                    <li className="p-2 text-center">
-                      <FontAwesomeIcon icon={faSpinner} spin /> Searching...
-                    </li>
-                  ) : searchError ? (
-                    <li className="p-2 text-center text-red-500">
-                      Error fetching data
-                    </li>
-                  ) : filteredSongs.length > 0 ? (
-                    filteredSongs.map((song) => (
-                      <li
-                        key={song.id}
-                        className="flex cursor-pointer items-center border-b border-gray-700 p-2 hover:bg-[#2e026d] hover:text-white"
-                        onMouseDown={() => handleDDSelect(song)}
-                        role="option"
-                      >
-                        <img
-                          src={song.album.images[0].url}
-                          width={50}
-                          height={50}
-                          alt=""
-                          className="mr-3 rounded-md"
-                        />
-                        <div>
-                          <h3 className="text-sm font-semibold">{song.name}</h3>
-                          <p className="text-xs text-gray-400">
-                            {song.artists[0].name}
-                          </p>
-                        </div>
-                      </li>
-                    ))
-                  ) : (
-                    <li className="p-2 text-center">No results found</li>
-                  )}
-                </ul>
-              )}
             </div>
-          </form>
+            {!gameState?.dailySongFound && searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600"
+              >
+                <FontAwesomeIcon icon={faTimes} className="text-lg" />
+              </button>
+            )}
+            {dropdownVisible && (
+              <ul
+                className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white shadow-lg"
+                role="listbox"
+              >
+                {searchTracksQuery.isLoading || searchTracksQuery.isFetching ? (
+                  <li className="p-2 text-center">
+                    <FontAwesomeIcon icon={faSpinner} spin /> Searching...
+                  </li>
+                ) : searchTracksQuery.error ? (
+                  <li className="p-2 text-center text-red-500">
+                    Error fetching data
+                  </li>
+                ) : searchTracksQuery.data && searchTracksQuery.data.length > 0 ? (
+                  searchTracksQuery.data.map((song) => (
+                    <li
+                      key={song.id}
+                      className="flex cursor-pointer items-center border-b border-gray-700 p-2 hover:bg-[#2e026d] hover:text-white"
+                      onMouseDown={() => handleDDSelect(song)}
+                      role="option"
+                    >
+                      <img
+                        src={song.album.images[0].url}
+                        width={50}
+                        height={50}
+                        alt=""
+                        className="mr-3 rounded-md"
+                      />
+                      <div>
+                        <h3 className="text-sm font-semibold">{song.name}</h3>
+                        <p className="text-xs text-gray-400">
+                          {song.artists[0].name}
+                        </p>
+                      </div>
+                    </li>
+                  ))
+                ) : (
+                  <li className="p-2 text-center">No results found</li>
+                )}
+              </ul>
+            )}
+          </div>
         </div>
 
-      <div>
-        <SongComparisonTable selectedSong={pickedSongs} dailySong={dailySong} />
-      </div>
+        
+        <SongComparisonTable gameState={gameState} dailySong={dailySong} />
+        
       </main>
     </PlayerProvider>
   );

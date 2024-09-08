@@ -1,4 +1,5 @@
 import { DefaultSession } from "next-auth";
+import { trackType as Song } from "./spotify.types";
 
 interface MyUser {
   name?: string | null;
@@ -85,4 +86,11 @@ export interface SearchResults {
   tracks?: {
     items: Track[];
   };
+}
+
+export interface GameState {
+  pickedSongs: Song[];
+  dailySongFound: boolean;
+  guessState: { guessedCorrectly: boolean; attempts: number };
+  lastResetDate: string;
 }
