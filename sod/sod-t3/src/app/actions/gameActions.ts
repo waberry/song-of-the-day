@@ -21,16 +21,17 @@ export async function getGameState(anonymousUserId: string): Promise<any> {
     // tomorrow.setDate(tomorrow.getDate() + 1); // set to start of tomorrow
 
     // Fetch the existing game state for today
-    let gameState = await prisma.gameState.findFirst({
-      where: {
-        anonymousUserId,
-        lastResetDate: {
-          gte: today,
-          lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
-          // lt: tomorrow
-        },
-      },
-    });
+    // let gameState = await prisma.gameState.findFirst({
+    //   where: {
+    //     anonymousUserId,
+    //     lastResetDate: {
+    //       gte: today,
+    //       lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+    //       // lt: tomorrow
+    //     },
+    //   },
+    // });
+    let gameState = null;
 
     // If no game state exists for today, create a new one
     if (!gameState) {
