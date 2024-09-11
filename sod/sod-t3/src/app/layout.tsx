@@ -27,9 +27,9 @@ export default function RootLayout({
       <body className={`font-sans ${inter.variable}`}>
         <Providers>
           <TRPCReactProvider>
-            <PrefetchQueriesWrapper>
-              <NavbarWrapper />
-            </PrefetchQueriesWrapper>
+            {/* <PrefetchQueriesWrapper> */}
+              {/* <NavbarWrapper /> */}
+            {/* </PrefetchQueriesWrapper> */}
             <main className="">{children}</main>
             <Footer />
           </TRPCReactProvider>

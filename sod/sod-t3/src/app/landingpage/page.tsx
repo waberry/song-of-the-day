@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSearch,
@@ -20,12 +19,17 @@ import ErrorDisplay from "../components/ErrorDisplay";
 import { PlayerProvider } from "../components/PlayerContext";
 import { getAnonymousUserId } from "~/utils/anonymousUserId";
 import SongComparisonTable from "../components/SongComparisonTable";
-import { trackType as Song } from "~/types/spotify.types";
 import { GameState } from "~/types/types";
 import { isCorrectGuess, getDetailedSongComparison as compareSongs } from "~/utils/gameUtils";
+import { Track as Song } from "@prisma/client";
+import dynamic from 'next/dynamic';
+
+// const SongComparisonTable = dynamic(() => import("../components/SongComparisonTable"), {
+//   ssr: false, // This will prevent server-side rendering of this component
+//   loading: () => <p>Loading...</p>, // Optional loading component
+// });
 
 export default function LandingPage() {
-  const { data: session } = useSession();
   const [searchTerm, setSearchTerm] = useState("");
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
@@ -35,6 +39,7 @@ export default function LandingPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [anonymousUserId, setAnonymousUserId] = useState<string | null>(null);
+
 
   const searchTracksQuery = api.spotify.searchTracks.useQuery(
     { searchTerm },
@@ -165,7 +170,7 @@ export default function LandingPage() {
 
     const newPickedSongs = [
       
-      { ...song, commonMetadata, isCorrectGuess: correct },
+      { ...song },
       ...gameState.pickedSongs,
     ];
     const newGuessState = {
@@ -199,7 +204,8 @@ export default function LandingPage() {
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-sky-400 to-indigo-800 text-indigo-900">
         {showPopup && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div className="rounded bg-pink-500 px-4 py-2 text-white shadow-lg">
+            <div className="ro
+            d bg-pink-500 px-4 py-2 text-white shadow-lg">
               Song already added!
             </div>
           </div>
@@ -274,9 +280,15 @@ export default function LandingPage() {
             )}
             {dropdownVisible && (
               <ul
-                className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white shadow-lg"
-                role="listbox"
-              >
+              className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white shadow-lg"
+              role="listbox"
+              style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+              }}
+            >
                 {searchTracksQuery.isLoading || searchTracksQuery.isFetching ? (
                   <li className="p-2 text-center">
                     <FontAwesomeIcon icon={faSpinner} spin /> Searching...
@@ -317,8 +329,9 @@ export default function LandingPage() {
         </div>
 
         
-        <SongComparisonTable gameState={gameState} dailySong={dailySong} />
-        
+        <div className="relative z-0 w-full">
+          <SongComparisonTable gameState={gameState} dailySong={dailySong} />
+        </div>
       </main>
     </PlayerProvider>
   );

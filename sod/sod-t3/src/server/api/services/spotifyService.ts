@@ -1,9 +1,13 @@
 import axios from "axios";
 import { refreshAccessToken } from "../routers/authservice";
 import { spotifyUserType } from "~/types/spotify.types";
+import { Track } from "@prisma/client";
+
 
 const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+
+// TODO Dry this file
 
 export const getSpotifyAccessToken = async (): Promise<string> => {
   const response = await fetch("https://accounts.spotify.com/api/token", {
@@ -16,7 +20,41 @@ export const getSpotifyAccessToken = async (): Promise<string> => {
   });
 
   const data = await response.json();
+  console.log("inside function ==>> ", data)
   return data.access_token;
+};
+
+export const fetchArtistInfo = async (Ids: string, accessToken: string): Promise<string[]> => {
+  const artistsResponse = await fetch(
+    `https://api.spotify.com/v1/artists?ids=${Ids}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+  const chunkData = await artistsResponse.json();
+  //let  artistsGenres = chunkData.artists.map(artist => artist.genres).flat();
+  return chunkData.artists;
+}
+
+export const fetchGenresForSong = async (Ids: string, accessToken: string): Promise<string[]> => {
+  
+  let artistsGenres: string[] = [];   
+  const artistsResponse = await fetch(
+    `https://api.spotify.com/v1/artists?ids=${Ids}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+  const chunkData = await artistsResponse.json();
+  artistsGenres = chunkData.artists.map(artist => artist.genres).flat();
+   
+  console.log("CHUNKDATA--->>>>", chunkData);
+  console.log("In Service Genres --->>>>", artistsGenres);
+  return artistsGenres;
 };
 
 export const searchSpotifyTracks = async (

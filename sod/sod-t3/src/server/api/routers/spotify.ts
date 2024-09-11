@@ -23,9 +23,12 @@ import {
   getCurrentlyPlaying,
   getDevices,
   getTrackAnalysis,
+  fetchArtistInfo,
+  fetchGenresForSong,
 } from "../services/spotifyService";
 import { selectAndStoreDailySong } from "../services/dailySongService";
 import { TRPCError } from "@trpc/server";
+import { access } from "fs";
 
 export const spotifyRouter = createTRPCRouter({
   searchTracks: publicProcedure
@@ -52,14 +55,62 @@ export const spotifyRouter = createTRPCRouter({
         });
       }
     }),
+  
+  getGenres: publicProcedure
+  .input(z.object({ ids: z.string() }))
+  .query(async ({ input }) => {
+    if (input.ids === "" || !input.ids) return [];
+    let genres = [];
+    try {
+      const accessToken = await getSpotifyAccessToken();
+      if (!accessToken){
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "getGenres - Failed to obtain Spotify access token",
+        });
+      }
+      genres = await fetchGenresForSong(input.ids, accessToken)
+      return genres;
+    }catch(error){
+      console.log("fetching Genre Error \n", error);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "An error occurred while fetching the genres\n",
+      });
 
+    }
+  }),
+  getArtists: publicProcedure
+  .input(z.object({ ids: z.string() }))
+  .query(async ({ input }) => {
+    if (input.ids === "" || !input.ids) return [];
+    try {
+      const accessToken = await getSpotifyAccessToken();
+      console.log("procedure getArtists input: ", input.ids);
+      if (!accessToken){
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "getGenres - Failed to obtain Spotify access token",
+        });
+      }
+      let resp =  await fetchArtistInfo(input.ids, accessToken)
+      return resp;
+    }catch(error){
+      console.log("fetching Artists Info: Error: \n", error);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "An error occurred while fetching the genres\n",
+      });
+
+    }
+  }),
   getDailySong: publicProcedure.query(async () => {
     try {
       const accessToken = await getSpotifyAccessToken();
       if (!accessToken) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to obtain Spotify access token",
+          message: "getDailySong - Failed to obtain Spotify access token",
         });
       }
       const dailySong = await selectAndStoreDailySong(accessToken);
