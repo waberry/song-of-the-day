@@ -1,23 +1,42 @@
-// components/LoadingScreen.tsx
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMusic, faMicrophone, faHeadphones, faGuitar } from "@fortawesome/free-solid-svg-icons";
+
+const musicTips = [
+  "Get ready to test your music knowledge!",
+  "Can you guess today's song?",
+  "Listen carefully to the clues...",
+  "Every day, a new song challenge awaits!",
+  "Sharpen your ears for the melody!",
+];
 
 const LoadingScreen: React.FC = () => {
+  const [tip, setTip] = useState(musicTips[0]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTip(musicTips[Math.floor(Math.random() * musicTips.length)]);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <div className="flex h-screen flex-col items-center justify-center bg-gradient-to-br from-purple-900 to-black">
-      <div className="relative h-48 w-48">
-        {/* Vinyl record */}
-        <div className="h-full w-full animate-pulse rounded-full border-8 border-gray-800 bg-black">
-          <div className="absolute left-1/2 top-1/2 h-1/2 w-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-gray-800">
-            <div className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-white"></div>
-          </div>
-        </div>
-        {/* Record player arm */}
-        <div className="absolute left-1/2 top-1/2 h-1 w-1/2 origin-left -translate-y-1/2 animate-spin-slow bg-gray-300"></div>
-      </div>
-      <p className="mt-8 animate-pulse text-2xl font-bold text-white">
-        Loading your music...
+    <div className="flex h-screen flex-col items-center justify-center bg-gradient-to-br from-indigo-900 to-black">
+      
+      <p className="mt-8 text-2xl font-bold text-white">
+        Loading Your Session...
       </p>
+      <p className="mt-4 text-lg text-gray-300 animate-pulse">
+        {tip}
+      </p>
+      <div className="mt-8 flex space-x-4">
+        <FontAwesomeIcon icon={faMusic} className="text-3xl text-purple-400 animate-bounce" />
+        <FontAwesomeIcon icon={faMicrophone} className="text-3xl text-pink-400 animate-bounce" style={{ animationDelay: "0.1s" }} />
+        <FontAwesomeIcon icon={faHeadphones} className="text-3xl text-blue-400 animate-bounce" style={{ animationDelay: "0.2s" }} />
+        <FontAwesomeIcon icon={faGuitar} className="text-3xl text-green-400 animate-bounce" style={{ animationDelay: "0.3s" }} />
+      </div>
     </div>
   );
 };

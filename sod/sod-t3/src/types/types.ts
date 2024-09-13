@@ -87,11 +87,15 @@ export interface SearchResults {
     items: Track[];
   };
 }
+export interface SongWithGenres extends Song {
+  genres?: string[];
+  comparison: {};
+}
 
 export interface GameState {
   id?: number;  // Optional because it's auto-generated
   anonymousUserId: string;
-  pickedSongs: any[];
+  pickedSongs: SongWithGenres[];
   dailySongFound: boolean;
   guessState: {
     guessedCorrectly: boolean;

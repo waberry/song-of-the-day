@@ -5,14 +5,14 @@ const DURATION_THRESHOLD_MS = 2000;
 const POPULARITY_THRESHOLD = 10;
 
 export enum ComparisonKey {
-  Artist = 'artist',
-  Album = 'album',
-  Year = 'year',
-  Decade = 'decade',
-  Genre = 'genre',
-  Popularity = 'popularity',
-  Duration = 'duration',
-  ArtistCountry = 'artistCountry'
+  Artist = 'Artists',
+  Album = 'Album',
+  Year = 'Year',
+  Decade = 'Decade',
+  Genre = 'Genres',
+  Popularity = 'Popularity',
+  Duration = 'Duration',
+  ArtistCountry = 'Country'
 }
 
 export type ComparisonResult = {
@@ -33,6 +33,12 @@ const formatDuration = (ms: number): string => {
   const minutes = Math.floor(ms / 60000);
   const seconds = Math.floor((ms % 60000) / 1000);
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+};
+
+const similarGenres = (selectedGenres: string[], dailyGenres: string[]): number => {
+  if (!selectedGenres || !dailyGenres) return 0;
+  const dailyGenreSet = new Set(dailyGenres);
+  return selectedGenres.filter(genre => dailyGenreSet.has(genre)).length;
 };
 
 // Comparison functions
@@ -69,11 +75,12 @@ const compareDecades = (selectedYear: number, dailyYear: number): ComparisonResu
     comparison: selectedDecade === dailyDecade ? 'equal' : selectedDecade < dailyDecade ? 'lower' : 'higher',
   };
 };
+
 const compareGenres = (selectedGenres: string[], dailyGenres: string[]): ComparisonResult[ComparisonKey.Genre] => ({
-  result: selectedGenres.some(genre => dailyGenres.includes(genre)),
+  result: similarGenres(selectedGenres, dailyGenres) >= 2,
   message: selectedGenres.length ? `Genres: ${selectedGenres.join(', ')}` : 'No Data',
-  selectedValue: removeDuplicates(selectedGenres).join(' '),
-  dailyValue: removeDuplicates(dailyGenres).join(' '),
+  selectedValue: selectedGenres.join(' '),
+  dailyValue: dailyGenres.join(' '),
 });
 
 const comparePopularity = (selectedPopularity: number, dailyPopularity: number): ComparisonResult[ComparisonKey.Popularity] => ({
@@ -81,7 +88,7 @@ const comparePopularity = (selectedPopularity: number, dailyPopularity: number):
   message: Math.abs(selectedPopularity - dailyPopularity) <= POPULARITY_THRESHOLD ? 'Similar popularity' : selectedPopularity > dailyPopularity ? 'Go less popular' : 'Go more popular',
   selectedValue: selectedPopularity,
   dailyValue: dailyPopularity,
-  comparison: selectedPopularity === dailyPopularity ? 'equal' : selectedPopularity < dailyPopularity ? 'lower' : 'higher',
+  comparison: selectedPopularity === dailyPopularity ? 'equal' : selectedPopularity < dailyPopularity ? 'higher' : 'lower',
 });
 
 const compareDuration = (selectedDuration: number, dailyDuration: number): ComparisonResult[ComparisonKey.Duration] => {
@@ -92,7 +99,7 @@ const compareDuration = (selectedDuration: number, dailyDuration: number): Compa
     message: Math.abs(diff) <= DURATION_THRESHOLD_MS ? `Equal duration (${selectedMinSec})` : diff > 0 ? `Go shorter (${selectedMinSec})` : `Go longer (${selectedMinSec})`,
     selectedValue: formatDuration(selectedDuration),
     dailyValue: dailyDuration,
-    comparison: selectedDuration === dailyDuration ? 'equal' : selectedDuration < dailyDuration ? 'lower' : 'higher',
+    comparison: selectedDuration === dailyDuration ? 'equal' : selectedDuration < dailyDuration ? 'higer' : 'lower',
   };
 };
 
@@ -102,41 +109,30 @@ export const truncateGenres = (genres: string, limit: number = 2) => {
   return `${genreList.slice(0, limit).join(' ')} ...`;
 };
 
-export const extractUniqueGenres = (artists) => {
-  if (!artists) return [];
-  let allGenres = [];
-  
-  for (const k in artists) {
-    for (const l in artists[k].genres) {
-      allGenres.push(artists[k].genres[l]);
-    }
-  }
-  const uniqueGenres = Array.from(new Set(allGenres));
-  return uniqueGenres.sort();
-}
+
 
 export const getDetailedSongComparison = async (
-  selectedSong: any,
-  dailySong: any,
-  selectedSongArtists: any,
-  dailySongArtists: any,
+  selectedSong: Track & { artists: Artist[]; album: Album },
+  dailySong: Track & { artists: Artist[]; album: Album },
 ): Promise<ComparisonResult> => {
+  // console.log("getDetailedSongComparison: daily: ", dailySong)
   const selectedYear = new Date(selectedSong.album.release_date || '').getFullYear();
   const dailyYear = new Date(dailySong.album.releaseDate || '').getFullYear();
 
-  const selectedArtistCountry =  "Unknown";
-  const dailyArtistCountry =  "Unknown";
+  // Assuming we don't have country information, we'll keep it as unknown
+  const selectedArtistCountry = "Unknown";
+  const dailyArtistCountry = "Unknown";
 
-  const selectedGenres = extractUniqueGenres(selectedSongArtists);
-  const dailyGenres = extractUniqueGenres(dailySongArtists);
-  console.log("Comparing genres: ", selectedGenres, dailyGenres);
+  // Extract genres directly from the artist information
+  // const selectedGenres = removeDuplicates(selectedSongArtists.flatMap(artist => artist.genres));
+  // const dailyGenres = removeDuplicates(dailySongArtists.flatMap(artist => artist.genres));
 
   return {
     [ComparisonKey.Artist]: compareArtists(selectedSong.artists, dailySong.artists),
     [ComparisonKey.Album]: compareAlbums(selectedSong.album, dailySong.album),
     [ComparisonKey.Year]: compareYears(selectedYear, dailyYear),
     [ComparisonKey.Decade]: compareDecades(selectedYear, dailyYear),
-    [ComparisonKey.Genre]: compareGenres(selectedGenres, dailyGenres),
+    [ComparisonKey.Genre]: compareGenres(selectedSong.genres, dailySong.genres),
     [ComparisonKey.Popularity]: comparePopularity(selectedSong.popularity!, dailySong.popularity!),
     [ComparisonKey.Duration]: compareDuration(selectedSong.duration_ms, dailySong.duration),
     [ComparisonKey.ArtistCountry]: {
@@ -147,6 +143,10 @@ export const getDetailedSongComparison = async (
     },
   };
 };
+
+
+
+
 
 export const isCorrectGuess = (selectedSong: Track, dailySong: Track): boolean => {
   if (selectedSong.id === dailySong.id) return true;

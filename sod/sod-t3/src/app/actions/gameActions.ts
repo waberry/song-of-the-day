@@ -2,18 +2,7 @@
 import { db as prisma } from "~/server/db";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { GameState } from "~/types/types";
-import { api } from "~/trpc/server";
 import { fetchArtistInfo, getSpotifyAccessToken } from "~/server/api/services/spotifyService";
-
-// export const getGenres = async (ids: string[]): Promise<string[]> => {
-//   try {
-//     const genres = await api.spotify.getGenres.useQuery({ ids: ids.join(',') }).data;
-//     return removeDuplicates(genres);
-//   } catch (error) {
-//     console.error('Error fetching genres:', error);
-//     return [];
-//   }
-// };
 
 export const getArtistsInfo = async (ids: string): Promise<any> => {
   try {
@@ -86,6 +75,7 @@ async function updateGameStateWithRetry(
   newState: any,
   retries = 3
 ): Promise<any> {
+  let currentGameState = null;
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -101,10 +91,11 @@ async function updateGameStateWithRetry(
     });
 
     if (!currentGameState) {
+      console.log("No Current GameState for this user!");
       currentGameState = await prisma.gameState.create({
         data: {
           anonymousUserId,
-          pickedSongs: [],
+          pickedSongs: newState.pickedSongs || [],
           dailySongFound: false,
           guessState: { guessedCorrectly: false, attempts: 0 },
           lastResetDate: today,
@@ -112,6 +103,7 @@ async function updateGameStateWithRetry(
         },
       });
     } else {
+      console.log("Updating current GameState!");
       const isNewDay = currentGameState.lastResetDate.getTime() !== today.getTime();
 
       if (!isNewDay && Object.keys(newState).length === 0) {
@@ -128,7 +120,7 @@ async function updateGameStateWithRetry(
         },
       });
     }
-
+    console.log("UpdateWithRetry: ", currentGameState);
     return currentGameState;
   } catch (error) {
     if (retries > 0 && error instanceof PrismaClientKnownRequestError && error.code === "P2002") {
@@ -148,8 +140,9 @@ export async function updateGameState(anonymousUserId: string, newState: any) {
 
 export async function saveGameState(
   anonymousUserId: string,
-  gameState: GameState,
+  gameState: any,
 ): Promise<any> {
+  console.log("\n------------Saving New GameeState-------------\n")
   try {
     // Get or create today's game state
     const currentGameState = await getGameState(anonymousUserId);
@@ -158,18 +151,15 @@ export async function saveGameState(
       throw new Error("Game state not found for the provided user ID.");
     }
 
-    // Check if it's a new day or if the local state is not empty
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const isNewDay = currentGameState.lastResetDate.getTime() !== today.getTime();
-
-    console.log("SAVING STATE --->", gameState);
-    if (!isNewDay && Object.keys(gameState).length === 0) {
-      console.log("Empty localstorage ! ---!!!!");
-      console.log("No update needed: It's not a new day and the local state is empty.");
-      return currentGameState; // Return the current state without making changes
-    }
-
+    // // Check if it's a new day or if the local state is not empty
+    // const today = new Date();
+    // today.setHours(0, 0, 0, 0);
+    // const isNewDay = currentGameState.lastResetDate.getTime() !== today.getTime();
+    // if (!isNewDay && Object.keys(gameState).length === 0) {
+    //   console.log("Empty localstorage ! ---!!!!");
+    //   console.log("No update needed: It's not a new day and the local state is empty.");
+    //   return currentGameState; // Return the current state without making changes
+    // }
     const updatedGameState = await updateGameState(anonymousUserId, gameState);
 
     return updatedGameState;
@@ -216,9 +206,9 @@ export async function getDailySong() {
 function restructureTrack(track) {
   return {
     ...track,
-    duration_ms: track.duration,
+    duration_ms: track.duration_ms,
     preview_url: track.previewUrl,
-    external_urls: { spotify: track.spotifyUrl },
+    external_urls: { spotify: track.external_urls },
     uri: `spotify:track:${track.id}`,
     album: {
       ...track.album,
@@ -228,11 +218,11 @@ function restructureTrack(track) {
         width: img.width,
       })),
       imageUrl: track.album.imageUrl,
-      external_urls: { spotify: track.album.spotifyUrl },
+      external_urls: { spotify: track.album.external_urls },
     },
     artists: track.artists.map((ta) => ({
       ...ta.artist,
-      external_urls: { spotify: ta.artist.spotifyUrl },
+      external_urls: { spotify: ta.artist.external_urls },
       images: ta.artist.images.map((img) => ({
         url: img.url,
         height: img.height,

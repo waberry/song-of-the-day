@@ -1,10 +1,14 @@
+// File: /app/_trpc/Provider.tsx
+
 "use client";
+
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
+import { httpBatchLink, loggerLink } from "@trpc/client";
 import { api } from "~/trpc/react";
 import { signOut, getSession } from "next-auth/react";
 import { TRPCClientError } from "@trpc/client";
+import superjson from "superjson";
 
 export const useHandleUnauthorized = () => {
   return {
@@ -30,12 +34,19 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
             retry: 1,
           },
         },
-      }),
+      })
   );
 
   const [trpcClient] = useState(() =>
     api.createClient({
       links: [
+        loggerLink({
+          enabled: (opts) =>
+            process.env.NODE_ENV === "development" &&
+            typeof window !== "undefined" &&
+            opts.direction === "down" &&
+            opts.result instanceof Error,
+        }),
         httpBatchLink({
           url: "/api/trpc",
           async headers() {
@@ -50,7 +61,8 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
           },
         }),
       ],
-    }),
+      transformer: superjson,
+    })
   );
 
   return (

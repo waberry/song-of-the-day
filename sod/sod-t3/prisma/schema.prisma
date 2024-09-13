@@ -19,54 +19,102 @@ model Post {
 }
 
 model Track {
-  id                String        @id
+  id                String          @id
   name              String
-  duration          Int
-  popularity        Int?
-  previewUrl        String?
-  spotifyUrl        String
+  popularity        Int
   albumId           String
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
   available_markets String[]
-  disc_number       Int?
-  explicit          Boolean?
-  is_local          Boolean?
-  track_number      Int?
-  type              String?
+  explicit          Boolean
+  is_local          Boolean
+  track_number      Int
+  type              String
+  duration_ms       Int
+  is_playable       Boolean?
+  preview_url       String?
+  restrictions      Json?
+  uri               String          @unique
+  disc_number       Int
+  external_ids      Json
+  href              String
+  external_urls     Json
+  artists           ArtistTrack[]
   DailySong         DailySong?
-  album             Album         @relation(fields: [albumId], references: [id])
-  artists           TrackArtist[]
-  release_date      DateTime
+  playlists         PlaylistTrack[]
+  album             Album           @relation(fields: [albumId], references: [id])
+  TrackArtist       TrackArtist[]
 }
 
 model Album {
-  id                     String       @id
+  id                     String        @id
   name                   String
-  release_date           String?
   imageUrl               String?
-  spotifyUrl             String?
-  createdAt              DateTime     @default(now())
-  updatedAt              DateTime     @updatedAt
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
   release_date_precision String?
   total_tracks           Int?
   type                   String?
+  release_date           String?
+  external_urls          Json?
+  AlbumArtist            AlbumArtist[]
   images                 AlbumImage[]
   tracks                 Track[]
 }
 
 model Artist {
-  id         String        @id
-  name       String
-  spotifyUrl String?
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-  followers  Int?
-  genres     String[]
-  popularity Int?
-  type       String?
-  images     ArtistImage[]
-  tracks     TrackArtist[]
+  id            String        @id
+  name          String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  genres        String[]
+  popularity    Int
+  type          String        @default("artist")
+  href          String
+  uri           String        @unique
+  followers     Json
+  external_urls Json
+  albums        AlbumArtist[]
+  images        ArtistImage[]
+  ArtistTrack   ArtistTrack[]
+  tracks        TrackArtist[]
+}
+
+model AlbumArtist {
+  artistId String
+  albumId  String
+  album    Album  @relation(fields: [albumId], references: [id])
+  artist   Artist @relation(fields: [artistId], references: [id])
+
+  @@id([artistId, albumId])
+}
+
+model ArtistImage {
+  artistId String
+  url      String
+  height   Int?
+  width    Int?
+  artist   Artist @relation(fields: [artistId], references: [id])
+
+  @@id([artistId, url])
+}
+
+model ArtistTrack {
+  artistId String
+  trackId  String
+  artist   Artist @relation(fields: [artistId], references: [id])
+  track    Track  @relation(fields: [trackId], references: [id])
+
+  @@id([artistId, trackId])
+}
+
+model PlaylistTrack {
+  userId   String
+  trackId  String
+  added_at DateTime
+  is_local Boolean
+  track    Track    @relation(fields: [trackId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@id([userId, trackId])
 }
 
 model TrackArtist {
@@ -88,22 +136,13 @@ model AlbumImage {
   @@id([albumId, url])
 }
 
-model ArtistImage {
-  artistId String
-  url      String
-  height   Int?
-  width    Int?
-  artist   Artist @relation(fields: [artistId], references: [id])
-
-  @@id([artistId, url])
-}
-
 model DailySong {
   id           String   @id @default(uuid())
   trackId      String   @unique
   selectedDate DateTime @unique @default(now())
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  genres       String[]
   track        Track    @relation(fields: [trackId], references: [id])
 }
 
@@ -132,26 +171,27 @@ model History {
   name          String
   imageUrl      String
   albumName     String
-  spotifyUrl    String
   artists       String[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   playedAt      DateTime @unique
   spotifyUserId String
+  external_urls Json
 
   @@index([spotifyUserId, playedAt])
 }
 
 model User {
-  id            String     @id @default(cuid())
+  id            String          @id @default(cuid())
   name          String?
-  email         String?    @unique
+  email         String?         @unique
   emailVerified DateTime?
   image         String?
-  spotifyId     String?    @unique
+  spotifyId     String?         @unique
   gameStateId   String?
   accounts      Account[]
   GameState     GameState?
+  PlaylistTrack PlaylistTrack[]
   posts         Post[]
   sessions      Session[]
 }

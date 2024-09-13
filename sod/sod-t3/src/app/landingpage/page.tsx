@@ -6,12 +6,7 @@ import {
   faSpinner,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
-import {
-  getGameState,
-  getCommonGameState,
-  getDailySong,
-  saveGameState,
-} from "../actions/gameActions";
+import { getGameState, getCommonGameState, getDailySong, saveGameState, getArtistsInfo } from "../actions/gameActions";
 import { api } from "~/trpc/react";
 import Player from "../components/Player";
 import LoadingScreen from "../components/loadingScreen";
@@ -19,15 +14,11 @@ import ErrorDisplay from "../components/ErrorDisplay";
 import { PlayerProvider } from "../components/PlayerContext";
 import { getAnonymousUserId } from "~/utils/anonymousUserId";
 import SongComparisonTable from "../components/SongComparisonTable";
-import { GameState } from "~/types/types";
-import { isCorrectGuess, getDetailedSongComparison as compareSongs } from "~/utils/gameUtils";
+import { GameState, SongWithGenres } from "~/types/types";
+import { isCorrectGuess, getDetailedSongComparison } from "~/utils/gameUtils";
 import { Track as Song } from "@prisma/client";
-import dynamic from 'next/dynamic';
-
-// const SongComparisonTable = dynamic(() => import("../components/SongComparisonTable"), {
-//   ssr: false, // This will prevent server-side rendering of this component
-//   loading: () => <p>Loading...</p>, // Optional loading component
-// });
+import WinAnimation from "../components/WinAnimation";
+import EnhancedGameHeader from "../components/Header";
 
 export default function LandingPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,7 +26,7 @@ export default function LandingPage() {
   const [showPopup, setShowPopup] = useState(false);
   const [commonGameState, setCommonGameState] = useState(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
-  const [dailySong, setDailySong] = useState<Song | null>(null);
+  const [dailySong, setDailySong] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [anonymousUserId, setAnonymousUserId] = useState<string | null>(null);
@@ -75,8 +66,18 @@ export default function LandingPage() {
         }
 
         setGameState(currentGameState);
-        const dailySong = await getDailySong();
-        setDailySong(dailySong);
+        
+        const fetchedDailySong = await getDailySong();
+        if (fetchedDailySong) {
+          const dailyArtistIds = fetchedDailySong.artists.map(artist => artist.id);
+          const dailyArtistsInfo = await getArtistsInfo(dailyArtistIds.join(","));
+          const dailyGenres = Array.from(new Set(dailyArtistsInfo.flatMap(artist => artist.genres)));
+          
+          setDailySong({
+            ...fetchedDailySong,
+            genres: dailyGenres
+          });
+        }
       } catch (err) {
         console.error("Initialization error:", err);
         setError("Failed to load game data. Please try again later.");
@@ -95,17 +96,17 @@ export default function LandingPage() {
       });
     }
 
-    const intervalId = setInterval(() => {
-      if (gameState && anonymousUserId) {
-        console.log("Automatically saving game state to the database...");
-        saveGameState(anonymousUserId, gameState).catch(err => {
-          console.error("Failed to periodically save game state:", err);
-        });
-      }
-    }, 60000);
+    // const intervalId = setInterval(() => {
+    //   if (gameState && anonymousUserId) {
+    //     console.log("Automatically saving game state to the database...");
+    //     saveGameState(anonymousUserId, gameState).catch(err => {
+    //       console.error("Failed to periodically save game state:", err);
+    //     });
+    //   }
+    // }, 60000);
 
-    return () => clearInterval(intervalId);
-  }, [gameState, anonymousUserId]);
+    // return () => clearInterval(intervalId);
+  }, [gameState]);
 
   useEffect(() => {
     if (showPopup) {
@@ -125,7 +126,7 @@ export default function LandingPage() {
     }
   }, [gameState, anonymousUserId]);
 
-  const resetClientGameState = async (userId: string): Promise<GameState> => {
+  const resetClientGameState = async (userId: string): Promise<any> => {
     const newGameState = {
       pickedSongs: [],
       dailySongFound: false,
@@ -159,20 +160,34 @@ export default function LandingPage() {
     }, 200);
   };
 
-  const handleDDSelect = async (song: Song) => {
+  const handleDDSelect = async (selectedSong) => {
     if (!anonymousUserId || !gameState || !dailySong) return;
-    if (gameState.pickedSongs.some((pickedSong) => pickedSong.id === song.id)) {
+    if (gameState.pickedSongs.some((pickedSong) => pickedSong.id === selectedSong.id)) {
       setShowPopup(true);
       return;
     }
-    const correct = isCorrectGuess(song, dailySong);
-    const commonMetadata = correct ? null : compareSongs(song, dailySong);
-
-    const newPickedSongs = [
-      
-      { ...song },
-      ...gameState.pickedSongs,
-    ];
+    
+    const correct = isCorrectGuess(selectedSong, dailySong);
+    
+    // Fetch detailed artist info for both selected and daily songs
+    const selectedArtistIds = selectedSong.artists.map(artist => artist.id);
+    
+    const selectedArtistsInfo = await getArtistsInfo(selectedArtistIds.join(","));
+    
+    // Extract genres directly from artist info
+    const selectedGenres = Array.from(new Set(selectedArtistsInfo.flatMap(artist => artist.genres))); 
+    console.log("selectedGenres in Landing: ", selectedGenres);
+    
+    const comparison = await getDetailedSongComparison(
+      {...selectedSong, genres: selectedGenres}, 
+      dailySong 
+    );
+    const newPickedSong = {
+      ...selectedSong,
+      genres: selectedGenres,
+      comparison: comparison,
+    };
+    const newPickedSongs = [newPickedSong, ...gameState.pickedSongs];
     const newGuessState = {
       guessedCorrectly: correct || gameState.guessState.guessedCorrectly,
       attempts: gameState.guessState.attempts + 1,
@@ -184,7 +199,6 @@ export default function LandingPage() {
       dailySongFound: correct || gameState.dailySongFound,
       guessState: newGuessState,
     };
-
     const updatedGameState = await saveGameState(anonymousUserId, newGameState);
     setGameState(updatedGameState);
     setDropdownVisible(false);
@@ -210,34 +224,9 @@ export default function LandingPage() {
             </div>
           </div>
         )}
-
+        {gameState?.dailySongFound && <WinAnimation />}
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-          {gameState?.dailySongFound ? (
-            <div className="mb-4 text-center">
-              <h2 className="text-2xl font-bold text-emerald-400">
-                Congratulations!
-              </h2>
-              <p className="text-white">You've found today's song!</p>
-            </div>
-          ) : (
-            <p className="text-white">
-              Song of the day is hidden. Try to guess it! Attempts:{" "}
-              {gameState?.pickedSongs.length || 0}
-            </p>
-          )}
-
-          <div>
-            <Player
-              song={dailySong}
-              isFound={gameState?.dailySongFound || false}
-              isLoading={isLoading}
-            />
-          </div>
-
-          <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-            What is the <span className="text-emerald-300">song</span> of the
-            day
-          </h1>
+          <EnhancedGameHeader gameState={gameState} />
         </div>
 
         <div className="container mx-auto mb-4">

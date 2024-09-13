@@ -1,7 +1,68 @@
-import { PrismaClient } from "@prisma/client";
-import { getPopularTracks } from "./spotifyService";
+import { PrismaClient, Prisma } from '@prisma/client';
+import { getPopularTracks } from './spotifyService';
 
 const prisma = new PrismaClient();
+
+function pickTrackFields(track: any): Prisma.TrackCreateInput {
+  return {
+    id: track.id,
+    name: track.name,
+    duration_ms: track.duration_ms,
+    popularity: track.popularity,
+    preview_url: track.preview_url,
+    external_urls: track.external_urls,
+    external_ids: track.external_ids,
+    uri: track.uri,
+    explicit: track.explicit,
+    is_local: track.is_local,
+    disc_number: track.disc_number,
+    track_number: track.track_number,
+    type: track.type,
+    href: track.href,
+    available_markets: track.available_markets,
+    album: {
+      connectOrCreate: {
+        where: { id: track.album.id },
+        create: {
+          id: track.album.id,
+          name: track.album.name,
+          release_date: track.album.release_date,
+          release_date_precision: track.album.release_date_precision,
+          total_tracks: track.album.total_tracks,
+          type: track.album.type,
+          external_urls: track.album.external_urls,
+          images: {
+            create: track.album.images.map((image: any) => ({
+              url: image.url,
+              height: image.height,
+              width: image.width,
+            })),
+          },
+        },
+      },
+    },
+    artists: {
+      create: track.artists.map((artist: any) => ({
+        artist: {
+          connectOrCreate: {
+            where: { id: artist.id },
+            create: {
+              id: artist.id,
+              name: artist.name,
+              uri: artist.uri,
+              external_urls: artist.external_urls,
+              type: artist.type,
+              href: artist.href,
+              popularity: artist.popularity || 0,
+              followers: artist.followers || { total: 0 },
+            },
+          },
+        },
+      })),
+    },
+  };
+}
+
 
 export async function selectAndStoreDailySong(accessToken: string) {
   const today = new Date();
@@ -28,8 +89,8 @@ export async function selectAndStoreDailySong(accessToken: string) {
 
     // If no DailySong exists for today, create a new one
     const popularTracks = await getPopularTracks(accessToken);
-    const randomTrack =
-      popularTracks[Math.floor(Math.random() * popularTracks.length)];
+    const randomTrack = popularTracks[Math.floor(Math.random() * popularTracks.length)];
+    console.log("Random track selected:", randomTrack.name);
 
     // Try to find the track in the database
     let track = await prisma.track.findUnique({
@@ -40,41 +101,9 @@ export async function selectAndStoreDailySong(accessToken: string) {
     // If the track doesn't exist, create it
     if (!track) {
       console.log("Creating new track in the database");
+      const trackData = pickTrackFields(randomTrack);
       track = await prisma.track.create({
-        data: {
-          id: randomTrack.id,
-          name: randomTrack.name,
-          duration: randomTrack.duration_ms,
-          popularity: randomTrack.popularity,
-          previewUrl: randomTrack.preview_url,
-          spotifyUrl: randomTrack.external_urls.spotify,
-          album: {
-            connectOrCreate: {
-              where: { id: randomTrack.album.id },
-              create: {
-                id: randomTrack.album.id,
-                name: randomTrack.album.name,
-                releaseDate: randomTrack.album.release_date, // TODO fix naming issue here
-                imageUrl: randomTrack.album.images[0].url,
-                spotifyUrl: randomTrack.album.external_urls.spotify,
-              },
-            },
-          },
-          artists: {
-            create: randomTrack.artists.map((artist) => ({
-              artist: {
-                connectOrCreate: {
-                  where: { id: artist.id },
-                  create: {
-                    id: artist.id,
-                    name: artist.name,
-                    spotifyUrl: artist.external_urls.spotify,
-                  },
-                },
-              },
-            })),
-          },
-        },
+        data: trackData,
         include: { artists: { include: { artist: true } }, album: true },
       });
     }
@@ -98,10 +127,7 @@ export async function selectAndStoreDailySong(accessToken: string) {
   } catch (error) {
     console.error("Error in selectAndStoreDailySong:", error);
     // If the error is due to a unique constraint violation, try to fetch the existing record
-    if (
-      error.code === "P2002" &&
-      error.meta?.target?.includes("selectedDate")
-    ) {
+    if (error.code === "P2002" && error.meta?.target?.includes("selectedDate")) {
       console.log("Unique constraint violation. Fetching existing daily song.");
       const existingDailySong = await prisma.dailySong.findUnique({
         where: { selectedDate: today },

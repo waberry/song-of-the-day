@@ -39,15 +39,6 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   };
 };
 
-// export const createTRPCContext = async (opts: CreateNextContextOptions) => {
-//   const { req, res } = opts;
-//   const session = await getServerSession(req, res, authOptions);
-
-//   return {
-//     session,
-//   };
-// };
-
 /**
  * 2. INITIALIZATION
  *

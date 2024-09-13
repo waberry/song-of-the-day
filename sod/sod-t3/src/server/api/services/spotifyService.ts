@@ -20,7 +20,6 @@ export const getSpotifyAccessToken = async (): Promise<string> => {
   });
 
   const data = await response.json();
-  console.log("inside function ==>> ", data)
   return data.access_token;
 };
 
