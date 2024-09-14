@@ -72,6 +72,40 @@ export const searchSpotifyTracks = async (
   return data.tracks.items;
 };
 
+export interface yesterdaySongFormat {
+  id: string;
+  name: string;
+  artists: Array<{ id: string; name: string }>;
+  album: {
+    id: string;
+    name: string;
+    release_date: string;
+    images: Array<{ url: string; height: number; width: number }>;
+  };
+  duration_ms: number;
+  popularity: number;
+  preview_url: string | null;
+  external_urls: { spotify: string };
+}
+
+export async function getTrackById(trackId: string, accessToken: string): Promise<yesterdaySongFormat> {
+  const response = await fetch(`https://api.spotify.com/v1/tracks/${trackId}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`Spotify API error (${response.status}): ${errorBody}`);
+  }
+
+  const data = await response.json();
+  return data as yesterdaySongFormat;
+}
+
 export const getTopTracks = async (
   accessToken: string,
   limit: number = 50,

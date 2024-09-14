@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 
-
 interface FlipBoardProps {
   text: string;
   className?: string;
@@ -13,12 +12,17 @@ export const FlipBoard: React.FC<FlipBoardProps> = ({ text, className = '' }) =>
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      const index = Math.floor(Math.random() * text.length);
-      flipChar(index);
-    }, 5000); // Trigger a flip every 5 seconds
+      flipAllChars();
+    }, 10000); // Trigger a full flip every 10 seconds
 
     return () => clearInterval(intervalId);
   }, [text]);
+
+  const flipAllChars = () => {
+    text.split('').forEach((char, index) => {
+      setTimeout(() => flipChar(index), index * 200); // Delay each character's flip
+    });
+  };
 
   const flipChar = (index: number) => {
     let currentChar = text[index];
@@ -31,22 +35,22 @@ export const FlipBoard: React.FC<FlipBoardProps> = ({ text, className = '' }) =>
         prev.substring(index + 1)
       );
       flipCount++;
-      if (flipCount === 5) {
+      if (flipCount === 3) { // Reduced number of flips
         clearInterval(flipInterval);
         setDisplay(prev =>
           prev.substring(0, index) + currentChar + prev.substring(index + 1)
         );
-        setFlipping(null);
+        setTimeout(() => setFlipping(null), 500); // Delay resetting flipping state
       }
-    }, 100);
+    }, 150); // Slower flip speed
   };
 
   return (
     <div className={`inline-flex ${className}`}>
       {display.split('').map((char, index) => (
-        <div key={index} className="relative overflow-hidden mx-[1px]">
+        <div key={index} className="relative overflow-hidden mx-[1px]" style={{ width: '1em', height: '1.2em' }}>
           <div
-            className={`transition-all duration-300 ease-in-out ${
+            className={`absolute inset-0 transition-all duration-500 ease-in-out ${
               flipping === index ? 'animate-flip' : ''
             }`}
             style={{
@@ -54,34 +58,18 @@ export const FlipBoard: React.FC<FlipBoardProps> = ({ text, className = '' }) =>
               transformStyle: 'preserve-3d',
             }}
           >
-            <div className="flex items-center justify-center bg-gradient-to-b from-sky-400 to-indigo-800 text-white px-2 py-1 rounded shadow-md backface-hidden">
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-sky-400 to-indigo-800 text-white rounded shadow-md backface-hidden">
               {char}
             </div>
             <div 
-              className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-gradient-to-b from-indigo-800 to-sky-400 text-white px-2 py-1 rounded shadow-md backface-hidden"
+              className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-indigo-800 to-sky-400 text-white rounded shadow-md backface-hidden"
               style={{ transform: 'rotateX(180deg)' }}
             >
               {char}
             </div>
           </div>
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-sky-200 opacity-30" />
-          <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-indigo-900 opacity-30" />
         </div>
       ))}
     </div>
-  );
-};
-
-
-export const AnimatedHeader: React.FC = () => {
-  return (
-    <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-      What is the{' '}
-      <FlipBoard 
-        text="SONG" 
-        className="text-emerald-300 inline-block"
-      />{' '}
-      of the day
-    </h1>
   );
 };

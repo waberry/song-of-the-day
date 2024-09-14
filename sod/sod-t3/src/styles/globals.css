@@ -83,15 +83,12 @@ input:-webkit-autofill:active {
 }
 
 @keyframes flip {
-  0% {
-    transform: rotateX(0deg);
-  }
-  50% {
-    transform: rotateX(90deg);
-  }
-  100% {
-    transform: rotateX(0deg);
-  }
+  0%, 100% { transform: rotateX(0deg); }
+  50% { transform: rotateX(180deg); }
+}
+
+.animate-flip {
+  animation: flip 1.5s ease-in-out;
 }
 
 .animate-flip {

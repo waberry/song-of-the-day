@@ -1,24 +1,20 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faSearch,
-  faSpinner,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
-import { getGameState, getCommonGameState, getDailySong, saveGameState, getArtistsInfo } from "../actions/gameActions";
+import { faSearch, faSpinner, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { getGameState, getCommonGameState, getDailySong, saveGameState, getYesterdaySong, setDailySongFound } from "../actions/gameActions";
 import { api } from "~/trpc/react";
-import Player from "../components/Player";
 import LoadingScreen from "../components/loadingScreen";
 import ErrorDisplay from "../components/ErrorDisplay";
 import { PlayerProvider } from "../components/PlayerContext";
 import { getAnonymousUserId } from "~/utils/anonymousUserId";
 import SongComparisonTable from "../components/SongComparisonTable";
 import { GameState, SongWithGenres } from "~/types/types";
-import { isCorrectGuess, getDetailedSongComparison } from "~/utils/gameUtils";
-import { Track as Song } from "@prisma/client";
 import WinAnimation from "../components/WinAnimation";
 import EnhancedGameHeader from "../components/Header";
+import RulesPopup from "../components/RulesPopup";
+import { YesterdayGuess, YesterdayGuessProps } from "../components/YesterdayGuess";
+
 
 export default function LandingPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -30,7 +26,16 @@ export default function LandingPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [anonymousUserId, setAnonymousUserId] = useState<string | null>(null);
+  const [yesterdaySong, setYesterdaySong] = useState<YesterdayGuessProps | null >(null);
 
+
+  useEffect(() => {
+    async function fetchYesterdaySong() {
+      const song = await getYesterdaySong();
+      setYesterdaySong(song);
+    }
+    fetchYesterdaySong();
+  }, []);
 
   const searchTracksQuery = api.spotify.searchTracks.useQuery(
     { searchTerm },
@@ -42,46 +47,32 @@ export default function LandingPage() {
   useEffect(() => {
     async function initializeGameState() {
       try {
+        setIsLoading(true);
         const userId = await getAnonymousUserId();
         setAnonymousUserId(userId);
         const commonState = await getCommonGameState();
         setCommonGameState(commonState);
-        const today = new Date();
-        const gameStateFromStorage = localStorage.getItem(`gameState_${userId}`);
-        let currentGameState: GameState;
-
-        if (gameStateFromStorage) {
-          const parsedGameState = JSON.parse(gameStateFromStorage);
-          const lastResetDate = new Date(parsedGameState.lastResetDate);
-          const isSameDay = lastResetDate.toDateString() === today.toDateString();
-
-          if (!isSameDay) {
-            currentGameState = await resetClientGameState(userId);
-          } else {
-            currentGameState = parsedGameState;
-          }
-        } else {
-          currentGameState = await getGameState(userId);
-          localStorage.setItem(`gameState_${userId}`, JSON.stringify(currentGameState));
-        }
-
-        setGameState(currentGameState);
         
+        // Initialize game state
+        const currentGameState = await initializeOrResetGameState(userId);
+        setGameState(currentGameState);
+        setIsLoading(false);
+
+        // Fetch daily song
         const fetchedDailySong = await getDailySong();
-        if (fetchedDailySong) {
-          const dailyArtistIds = fetchedDailySong.artists.map(artist => artist.id);
-          const dailyArtistsInfo = await getArtistsInfo(dailyArtistIds.join(","));
-          const dailyGenres = Array.from(new Set(dailyArtistsInfo.flatMap(artist => artist.genres)));
+        // if (fetchedDailySong) {
+        //   const dailyArtistIds = fetchedDailySong.artists.map(artist => artist.id);
+        //   const dailyArtistsInfo = await getArtistsInfo(dailyArtistIds.join(","));
+        //   const dailyGenres = Array.from(new Set(dailyArtistsInfo.flatMap(artist => artist.genres)));
           
-          setDailySong({
-            ...fetchedDailySong,
-            genres: dailyGenres
-          });
-        }
+        
+        // }
+        setDailySong({
+          ...fetchedDailySong,
+        });
       } catch (err) {
         console.error("Initialization error:", err);
         setError("Failed to load game data. Please try again later.");
-      } finally {
         setIsLoading(false);
       }
     }
@@ -95,17 +86,6 @@ export default function LandingPage() {
         console.error("Failed to save game state to the database:", err);
       });
     }
-
-    // const intervalId = setInterval(() => {
-    //   if (gameState && anonymousUserId) {
-    //     console.log("Automatically saving game state to the database...");
-    //     saveGameState(anonymousUserId, gameState).catch(err => {
-    //       console.error("Failed to periodically save game state:", err);
-    //     });
-    //   }
-    // }, 60000);
-
-    // return () => clearInterval(intervalId);
   }, [gameState]);
 
   useEffect(() => {
@@ -117,14 +97,27 @@ export default function LandingPage() {
     }
   }, [showPopup]);
 
-  useEffect(() => {
-    if (anonymousUserId && gameState) {
-      localStorage.setItem(
-        `gameState_${anonymousUserId}`,
-        JSON.stringify(gameState)
-      );
+ 
+  const initializeOrResetGameState = async (userId: string): Promise<GameState> => {
+    const today = new Date();
+    const gameStateFromStorage = localStorage.getItem(`gameState_${userId}`);
+    
+    if (gameStateFromStorage) {
+      const parsedGameState = JSON.parse(gameStateFromStorage);
+      const lastResetDate = new Date(parsedGameState.lastResetDate);
+      const isSameDay = lastResetDate.toDateString() === today.toDateString();
+  
+      if (!isSameDay) {
+        return await resetClientGameState(userId);
+      }
+      return parsedGameState;
+    } else {
+      // Pass true to indicate that localStorage is empty
+      const newGameState = await getGameState(userId, true);
+      localStorage.setItem(`gameState_${userId}`, JSON.stringify(newGameState));
+      return newGameState;
     }
-  }, [gameState, anonymousUserId]);
+  };
 
   const resetClientGameState = async (userId: string): Promise<any> => {
     const newGameState = {
@@ -167,45 +160,35 @@ export default function LandingPage() {
       return;
     }
     
-    const correct = isCorrectGuess(selectedSong, dailySong);
+    try {
     
-    // Fetch detailed artist info for both selected and daily songs
-    const selectedArtistIds = selectedSong.artists.map(artist => artist.id);
     
-    const selectedArtistsInfo = await getArtistsInfo(selectedArtistIds.join(","));
+      const newGameState = {
+        ...gameState,
+        pickedSongs: [selectedSong,
+          ...gameState.pickedSongs],
+      };
     
-    // Extract genres directly from artist info
-    const selectedGenres = Array.from(new Set(selectedArtistsInfo.flatMap(artist => artist.genres))); 
-    console.log("selectedGenres in Landing: ", selectedGenres);
-    
-    const comparison = await getDetailedSongComparison(
-      {...selectedSong, genres: selectedGenres}, 
-      dailySong 
-    );
-    const newPickedSong = {
-      ...selectedSong,
-      genres: selectedGenres,
-      comparison: comparison,
-    };
-    const newPickedSongs = [newPickedSong, ...gameState.pickedSongs];
-    const newGuessState = {
-      guessedCorrectly: correct || gameState.guessState.guessedCorrectly,
-      attempts: gameState.guessState.attempts + 1,
-    };
-
-    const newGameState = {
-      ...gameState,
-      pickedSongs: newPickedSongs,
-      dailySongFound: correct || gameState.dailySongFound,
-      guessState: newGuessState,
-    };
-    const updatedGameState = await saveGameState(anonymousUserId, newGameState);
-    setGameState(updatedGameState);
-    setDropdownVisible(false);
-    setSearchTerm("");
+      // Save the game state, which will perform the comparison on the server
+      const updatedGameState = await saveGameState(anonymousUserId, newGameState);
+  
+      // Update the local state with the new game state (including comparison data)
+      setGameState(updatedGameState);
+  
+      // Update localStorage with the new game state
+      localStorage.setItem(`gameState_${anonymousUserId}`, JSON.stringify(updatedGameState));
+  
+      console.log("Updated game state:", updatedGameState);
+      setDropdownVisible(false);
+      setSearchTerm("");
+      // setDailySongFound(updatedGameState.guessState.guessedCorrectly);
+    } catch (error) {
+      console.error("Failed to save game state:", error);
+      setError("Failed to save your guess. Please try again.");
+    }
   };
 
-  if (isLoading) {
+  if (!gameState && !dailySong && isLoading) {
     return <LoadingScreen />;
   }
 
@@ -216,6 +199,7 @@ export default function LandingPage() {
   return (
     <PlayerProvider>
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-sky-400 to-indigo-800 text-indigo-900">
+      <RulesPopup />
         {showPopup && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="ro
@@ -227,6 +211,7 @@ export default function LandingPage() {
         {gameState?.dailySongFound && <WinAnimation />}
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
           <EnhancedGameHeader gameState={gameState} />
+          <YesterdayGuess song={yesterdaySong} />
         </div>
 
         <div className="container mx-auto mb-4">
@@ -318,9 +303,15 @@ export default function LandingPage() {
         </div>
 
         
-        <div className="relative z-0 w-full">
-          <SongComparisonTable gameState={gameState} dailySong={dailySong} />
-        </div>
+        {gameState && dailySong ? (
+          <div className="relative z-0 w-full">
+            <SongComparisonTable gameState={gameState} dailySong={dailySong} />
+          </div>
+        ) : (
+          <div className="text-center text-white">
+            <p>Unable to load game data. Please try refreshing the page.</p>
+          </div>
+        )}
       </main>
     </PlayerProvider>
   );

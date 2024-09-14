@@ -4,9 +4,9 @@ import { DailySongPrefetchWrapper } from "./hooks/useDailySongPrefetch";
 export default async function Home() {
   return (
     <>
-      {/* <DailySongPrefetchWrapper> */}
+      <DailySongPrefetchWrapper>
         <LandingPage />
-      {/* </DailySongPrefetchWrapper> */}
+      </DailySongPrefetchWrapper>
     </>
   );
 }

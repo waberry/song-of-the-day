@@ -36,7 +36,8 @@ const formatDuration = (ms: number): string => {
 };
 
 const similarGenres = (selectedGenres: string[], dailyGenres: string[]): number => {
-  if (!selectedGenres || !dailyGenres) return 0;
+  if (!selectedGenres || !dailyGenres)  return 0;
+  if(!dailyGenres) throw new Error("ye!");
   const dailyGenreSet = new Set(dailyGenres);
   return selectedGenres.filter(genre => dailyGenreSet.has(genre)).length;
 };
@@ -61,7 +62,7 @@ const compareYears = (selectedYear: number, dailyYear: number): ComparisonResult
   message: selectedYear === dailyYear ? `Released in ${selectedYear}` : selectedYear < dailyYear ? `Go more recent (${selectedYear})` : `Go older (${selectedYear})`,
   selectedValue: selectedYear,
   dailyValue: dailyYear,
-  comparison: selectedYear === dailyYear ? 'equal' : selectedYear < dailyYear ? 'lower' : 'higher',
+  comparison: selectedYear === dailyYear ? 'equal' : selectedYear < dailyYear ? 'higher' : 'lower',
 });
 
 const compareDecades = (selectedYear: number, dailyYear: number): ComparisonResult[ComparisonKey.Decade] => {
@@ -72,16 +73,21 @@ const compareDecades = (selectedYear: number, dailyYear: number): ComparisonResu
     message: selectedDecade === dailyDecade ? `Same decade: ${selectedDecade}s` : selectedDecade < dailyDecade ? `Go to a later decade (${selectedDecade}s)` : `Go to an earlier decade (${selectedDecade}s)`,
     selectedValue: `${selectedDecade}s`,
     dailyValue: `${dailyDecade}s`,
-    comparison: selectedDecade === dailyDecade ? 'equal' : selectedDecade < dailyDecade ? 'lower' : 'higher',
+    comparison: selectedDecade === dailyDecade ? 'equal' : selectedDecade < dailyDecade ? 'higher' : 'lower',
   };
 };
 
-const compareGenres = (selectedGenres: string[], dailyGenres: string[]): ComparisonResult[ComparisonKey.Genre] => ({
-  result: similarGenres(selectedGenres, dailyGenres) >= 2,
-  message: selectedGenres.length ? `Genres: ${selectedGenres.join(', ')}` : 'No Data',
-  selectedValue: selectedGenres.join(' '),
-  dailyValue: dailyGenres.join(' '),
-});
+const compareGenres = (selectedGenres: string[] | undefined, dailyGenres: string[] | undefined): ComparisonResult[ComparisonKey.Genre] => {
+  const safeSelectedGenres = selectedGenres || [];
+  const safeDailyGenres = dailyGenres || [];
+
+  return {
+    result: similarGenres(safeSelectedGenres, safeDailyGenres) >= 1,
+    message: safeSelectedGenres.length ? `Genres: ${safeSelectedGenres.join(', ')}` : 'No Data',
+    selectedValue: safeSelectedGenres.join(', '),
+    dailyValue: safeDailyGenres.join(', '),
+  };
+};
 
 const comparePopularity = (selectedPopularity: number, dailyPopularity: number): ComparisonResult[ComparisonKey.Popularity] => ({
   result: Math.abs(selectedPopularity - dailyPopularity) <= POPULARITY_THRESHOLD,
@@ -98,8 +104,8 @@ const compareDuration = (selectedDuration: number, dailyDuration: number): Compa
     result: Math.abs(diff) <= DURATION_THRESHOLD_MS,
     message: Math.abs(diff) <= DURATION_THRESHOLD_MS ? `Equal duration (${selectedMinSec})` : diff > 0 ? `Go shorter (${selectedMinSec})` : `Go longer (${selectedMinSec})`,
     selectedValue: formatDuration(selectedDuration),
-    dailyValue: dailyDuration,
-    comparison: selectedDuration === dailyDuration ? 'equal' : selectedDuration < dailyDuration ? 'higer' : 'lower',
+    dailyValue: formatDuration(dailyDuration),
+    comparison: selectedDuration === dailyDuration ? 'equal' : selectedDuration < dailyDuration ? 'higher' : 'lower',
   };
 };
 
@@ -109,15 +115,13 @@ export const truncateGenres = (genres: string, limit: number = 2) => {
   return `${genreList.slice(0, limit).join(' ')} ...`;
 };
 
-
-
 export const getDetailedSongComparison = async (
   selectedSong: Track & { artists: Artist[]; album: Album },
-  dailySong: Track & { artists: Artist[]; album: Album },
+  dailySong: any,
 ): Promise<ComparisonResult> => {
   // console.log("getDetailedSongComparison: daily: ", dailySong)
   const selectedYear = new Date(selectedSong.album.release_date || '').getFullYear();
-  const dailyYear = new Date(dailySong.album.releaseDate || '').getFullYear();
+  const dailyYear = new Date(dailySong.album.release_date || '').getFullYear();
 
   // Assuming we don't have country information, we'll keep it as unknown
   const selectedArtistCountry = "Unknown";
@@ -132,9 +136,9 @@ export const getDetailedSongComparison = async (
     [ComparisonKey.Album]: compareAlbums(selectedSong.album, dailySong.album),
     [ComparisonKey.Year]: compareYears(selectedYear, dailyYear),
     [ComparisonKey.Decade]: compareDecades(selectedYear, dailyYear),
-    [ComparisonKey.Genre]: compareGenres(selectedSong.genres, dailySong.genres),
+    [ComparisonKey.Genre]: compareGenres(selectedSong.Genres, dailySong.genres),
     [ComparisonKey.Popularity]: comparePopularity(selectedSong.popularity!, dailySong.popularity!),
-    [ComparisonKey.Duration]: compareDuration(selectedSong.duration_ms, dailySong.duration),
+    [ComparisonKey.Duration]: compareDuration(selectedSong.duration_ms, dailySong.duration_ms),
     [ComparisonKey.ArtistCountry]: {
       result: selectedArtistCountry === dailyArtistCountry,
       message: `Artist from ${selectedArtistCountry}`,
@@ -144,19 +148,15 @@ export const getDetailedSongComparison = async (
   };
 };
 
-
-
-
-
-export const isCorrectGuess = (selectedSong: Track, dailySong: Track): boolean => {
+export const isCorrectGuess = (selectedSong: Track, dailySong: any): boolean => {
   if (selectedSong.id === dailySong.id) return true;
-
+  console.log("CHECKING IF CORRECT---->>>>", dailySong);
   const nameMatch = selectedSong.name.toLowerCase() === dailySong.name.toLowerCase();
   const artistMatch = selectedSong.artists.some((artist) =>
     dailySong.artists.some((dailyArtist) => dailyArtist.name.toLowerCase() === artist.name.toLowerCase())
   );
-  const durationMatch = Math.abs(selectedSong.duration_ms - dailySong.duration) <= DURATION_THRESHOLD_MS;
+  // const durationMatch = Math.abs(selectedSong.duration_ms - dailySong.duration) <= DURATION_THRESHOLD_MS;
   const albumMatch = selectedSong.album.name.toLowerCase() === dailySong.album.name.toLowerCase();
 
-  return nameMatch && artistMatch && (durationMatch || albumMatch);
+  return nameMatch && artistMatch && albumMatch;
 };

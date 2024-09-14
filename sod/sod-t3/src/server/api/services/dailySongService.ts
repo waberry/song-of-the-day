@@ -1,5 +1,6 @@
 import { PrismaClient, Prisma } from '@prisma/client';
-import { getPopularTracks } from './spotifyService';
+import { getPopularTracks, fetchGenresForSong, getSpotifyAccessToken } from './spotifyService';
+import { generateKeySync } from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -63,7 +64,6 @@ function pickTrackFields(track: any): Prisma.TrackCreateInput {
   };
 }
 
-
 export async function selectAndStoreDailySong(accessToken: string) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -79,10 +79,10 @@ export async function selectAndStoreDailySong(accessToken: string) {
       },
     });
 
-    // If a DailySong for today exists, return its track
+    // If a DailySong for today exists, return it
     if (dailySong) {
       console.log("Existing daily song found for today");
-      return dailySong.track;
+      return dailySong;
     }
 
     console.log("No daily song found for today. Selecting a new one.");
@@ -90,7 +90,7 @@ export async function selectAndStoreDailySong(accessToken: string) {
     // If no DailySong exists for today, create a new one
     const popularTracks = await getPopularTracks(accessToken);
     const randomTrack = popularTracks[Math.floor(Math.random() * popularTracks.length)];
-    console.log("Random track selected:", randomTrack.name);
+    if (randomTrack) console.log("Random track selected");
 
     // Try to find the track in the database
     let track = await prisma.track.findUnique({
@@ -108,12 +108,24 @@ export async function selectAndStoreDailySong(accessToken: string) {
       });
     }
 
-    // Create the DailySong entry
+    // Create the DailySong entry with additional information
     console.log("Creating new DailySong entry");
     dailySong = await prisma.dailySong.create({
       data: {
         trackId: track.id,
         selectedDate: today,
+        genres: await fetchGenresForSong(track.artists.flatMap(a => a.artistId).join(","), await getSpotifyAccessToken()),
+
+        // name: track.name,
+        // albumName: track.album.name,
+        // artistNames: track.artists.map(a => a.artist.name),
+        // duration_ms: track.duration_ms,
+        // popularity: track.popularity,
+        // preview_url: track.preview_url,
+        // external_urls: track.external_urls,
+        // release_date: track.album.release_date,
+        // album_images: track.album.images,
+        
       },
       include: {
         track: {
@@ -123,7 +135,7 @@ export async function selectAndStoreDailySong(accessToken: string) {
     });
 
     console.log("New daily song created successfully");
-    return dailySong.track;
+    return dailySong;
   } catch (error) {
     console.error("Error in selectAndStoreDailySong:", error);
     // If the error is due to a unique constraint violation, try to fetch the existing record

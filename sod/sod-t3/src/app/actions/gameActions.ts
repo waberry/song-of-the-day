@@ -2,34 +2,35 @@
 import { db as prisma } from "~/server/db";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { GameState } from "~/types/types";
-import { fetchArtistInfo, getSpotifyAccessToken } from "~/server/api/services/spotifyService";
+import { getTrackById, fetchGenresForSong, getSpotifyAccessToken } from "~/server/api/services/spotifyService";
+import { getDetailedSongComparison, isCorrectGuess } from '~/utils/gameUtils';
 
-export const getArtistsInfo = async (ids: string): Promise<any> => {
-  try {
-    const resp = await fetchArtistInfo(ids, await getSpotifyAccessToken());
-    return resp;
-  } catch (error) {
-    console.error('Error fetching artists infos: ', error);
-    return [];
-  }
-};
 
-export async function getGameState(anonymousUserId: string): Promise<GameState | null> {
+export async function getGameState(anonymousUserId: string, isLocalStorageEmpty: boolean = false): Promise<GameState> {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    console.log("Attempting to find game state")
+    console.log("Attempting to find game state");
+    
+    if (isLocalStorageEmpty) {
+      // If localStorage is empty, delete the existing game state (if any)
+      await prisma.gameState.deleteMany({
+        where: {
+          anonymousUserId: anonymousUserId,
+        },
+      });
+      console.log("Deleted existing game state due to empty localStorage");
+    }
+
     let gameState = await prisma.gameState.findFirst({
       where: {
         anonymousUserId: anonymousUserId,
       },
     });
 
-    console.log("Found game state");
-
-    if (!gameState) {
-      console.log("No game state found, creating new one");
+    if (!gameState || isLocalStorageEmpty) {
+      console.log("Creating new game state");
       gameState = await prisma.gameState.create({
         data: {
           anonymousUserId,
@@ -40,6 +41,8 @@ export async function getGameState(anonymousUserId: string): Promise<GameState |
         },
       });
       console.log("Created new game state:", gameState);
+    } else {
+      console.log("Found existing game state");
     }
 
     return gameState as GameState;
@@ -138,11 +141,12 @@ export async function updateGameState(anonymousUserId: string, newState: any) {
   return updateGameStateWithRetry(anonymousUserId, newState);
 }
 
+
 export async function saveGameState(
   anonymousUserId: string,
-  gameState: any,
-): Promise<any> {
-  console.log("\n------------Saving New GameeState-------------\n")
+  gameState: GameState
+): Promise<GameState> {
+  console.log("\n------------Saving New GameState-------------\n")
   try {
     // Get or create today's game state
     const currentGameState = await getGameState(anonymousUserId);
@@ -151,21 +155,93 @@ export async function saveGameState(
       throw new Error("Game state not found for the provided user ID.");
     }
 
-    // // Check if it's a new day or if the local state is not empty
-    // const today = new Date();
-    // today.setHours(0, 0, 0, 0);
-    // const isNewDay = currentGameState.lastResetDate.getTime() !== today.getTime();
-    // if (!isNewDay && Object.keys(gameState).length === 0) {
-    //   console.log("Empty localstorage ! ---!!!!");
-    //   console.log("No update needed: It's not a new day and the local state is empty.");
-    //   return currentGameState; // Return the current state without making changes
-    // }
+    // Get the daily song
+    const dailySong = await getDailySong();
+    if (!dailySong) {
+      throw new Error("ERROR: \n Saving GameState: Daily song not found: Could not perfrom comparison\n");
+    }
+    // Check if a new song was picked
+    if (gameState.pickedSongs.length > currentGameState.pickedSongs.length) {
+      const newPickedSong = gameState.pickedSongs[0];
+      
+      // Perform the comparison
+      newPickedSong["Genres"] = await fetchGenresForSong(newPickedSong.artists.flatMap(a => a.id).join(","), await getSpotifyAccessToken());
+      const comparison = await getDetailedSongComparison(newPickedSong, dailySong);
+      
+      
+      
+      // Check if it's the correct guess
+      const correct = isCorrectGuess(newPickedSong, dailySong);
+
+      // Update the picked song with comparison results
+      newPickedSong.comparison = comparison;
+      
+
+      // Update game state
+      gameState.dailySongFound = correct || gameState.dailySongFound;
+      gameState.guessState = {
+        guessedCorrectly: correct || gameState.guessState.guessedCorrectly,
+        attempts: gameState.guessState.attempts + 1,
+      };
+
+      // Replace the last picked song with the updated version (including comparison and genres)
+      gameState.pickedSongs[0] = newPickedSong;
+      console.log("saving newly picked! : ", newPickedSong);
+    }
+
+    // Update the game state in the database
     const updatedGameState = await updateGameState(anonymousUserId, gameState);
 
     return updatedGameState;
   } catch (error) {
     console.error("Failed to save game state:", error);
     throw error;
+  }
+}
+
+export async function getYesterdaySong() {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  yesterday.setHours(0, 0, 0, 0);
+
+  const yesterdaySong = await prisma.dailySong.findFirst({
+    where: {
+      selectedDate: {
+        gte: yesterday,
+        lt: new Date(yesterday.getTime() + 24 * 60 * 60 * 1000),
+      },
+    },
+    select: {
+      trackId: true,
+    },
+  });
+
+  if (!yesterdaySong) {
+    return null;
+  }
+
+  try {
+    const accessToken = await getSpotifyAccessToken();
+    const spotifyTrack = await getTrackById(yesterdaySong.trackId, accessToken);
+
+    // Format the data to match the YesterdayGuess component props
+    return {
+      name: spotifyTrack.name,
+      artist: spotifyTrack.artists[0].name,
+      imageUrl: spotifyTrack.album.images[0]?.url || '',
+      albumName: spotifyTrack.album.name,
+      duration: spotifyTrack.duration_ms,
+      popularity: spotifyTrack.popularity,
+      previewUrl: spotifyTrack.preview_url,
+      externalUrls: spotifyTrack.external_urls,
+      releaseDate: spotifyTrack.album.release_date,
+      // Note: Spotify track endpoint doesn't include genres, 
+      // you'd need a separate artist request for this
+      genres: [],
+    };
+  } catch (error) {
+    console.error("Error fetching track from Spotify:", error);
+    return null;
   }
 }
 
@@ -200,16 +276,18 @@ export async function getDailySong() {
     return null;
   }
   
-  return restructureTrack(dailySong.track);
+  return restructureTrack(dailySong);
 }
 
-function restructureTrack(track) {
+function restructureTrack(dailySong) {
+  let track = dailySong.track;
   return {
     ...track,
     duration_ms: track.duration_ms,
     preview_url: track.previewUrl,
     external_urls: { spotify: track.external_urls },
     uri: `spotify:track:${track.id}`,
+    genres: dailySong.genres,
     album: {
       ...track.album,
       images: track.album.images.map((img) => ({

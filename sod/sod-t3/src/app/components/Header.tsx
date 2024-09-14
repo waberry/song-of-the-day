@@ -9,13 +9,13 @@ interface EnhancedGameHeaderProps {
 const EnhancedGameHeader: React.FC<EnhancedGameHeaderProps> = ({ gameState }) => {
   return (
     <header className="text-center py-8 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg shadow-lg">
-      <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-4">
-        What is the{' '}
+      <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-4 flex items-center justify-center flex-wrap">
+        <span>What is the </span>
         <FlipBoard 
           text="SONG" 
-          className="text-emerald-300 inline-block"
-        />{' '}
-        of the day?
+          className="text-emerald-300 inline-block mx-2"
+        />
+        <span>of the day?</span>
       </h1>
       
       {gameState?.dailySongFound ? (

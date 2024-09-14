@@ -88,7 +88,7 @@ export interface SearchResults {
   };
 }
 export interface SongWithGenres extends Song {
-  genres?: string[];
+  Genres?: string[];
   comparison: {};
 }
 

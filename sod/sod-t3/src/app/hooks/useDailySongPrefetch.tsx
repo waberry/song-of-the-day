@@ -38,8 +38,8 @@ export function DailySongPrefetchWrapper({
 }: {
   children: React.ReactNode;
 }) {
-  // useDailySongPrefetch();
-  // usePrefetch('procedureName', { /* input if needed */ });
+  useDailySongPrefetch();
+  // usePrefetch('getDailySong', { /* input if needed */ });
   return <>{children}</>;
 }
 
