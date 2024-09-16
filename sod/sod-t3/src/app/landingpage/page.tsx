@@ -41,6 +41,7 @@ export default function LandingPage() {
     { searchTerm },
     {
       enabled: !!searchTerm,
+      logging: false,
     }
   );
 
@@ -179,6 +180,9 @@ export default function LandingPage() {
       localStorage.setItem(`gameState_${anonymousUserId}`, JSON.stringify(updatedGameState));
   
       console.log("Updated game state:", updatedGameState);
+      //update gameState variable
+      setGameState(updatedGameState);
+ 
       setDropdownVisible(false);
       setSearchTerm("");
       // setDailySongFound(updatedGameState.guessState.guessedCorrectly);

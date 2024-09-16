@@ -23,7 +23,7 @@ const SongComparisonTable: React.FC<SongComparisonTableProps> = ({ gameState, da
 
   const commonAttributes = useMemo(() => {
     if (gameState.pickedSongs.length === 0) return {};
-
+   
     return comparisonKeys.reduce((acc, key) => {
       const correctValues = gameState.pickedSongs
         .map(song => song.comparison[key])
@@ -35,7 +35,7 @@ const SongComparisonTable: React.FC<SongComparisonTableProps> = ({ gameState, da
       }
       return acc;
     }, {} as Partial<Record<ComparisonKey, string>>);
-  }, [gameState.pickedSongs]);
+  }, [gameState]);
 
   const getComparisonIcon = (key: ComparisonKey) => {
     const icons: Record<ComparisonKey, React.ReactNode> = {

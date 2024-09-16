@@ -1,18 +1,19 @@
 import { Track, Artist, Album } from '@prisma/client';
 
 // Constants
-const DURATION_THRESHOLD_MS = 2000;
-const POPULARITY_THRESHOLD = 10;
+const DURATION_THRESHOLD_MS = 1000;
+const POPULARITY_THRESHOLD = 5;
+const GENRE_SIMILARITIES = 1;
 
 export enum ComparisonKey {
-  Artist = 'Artists',
-  Album = 'Album',
-  Year = 'Year',
-  Decade = 'Decade',
+  Artist = 'artists',
+  Album = 'album',
+  Year = 'year',
+  Decade = 'decade',
   Genre = 'Genres',
-  Popularity = 'Popularity',
-  Duration = 'Duration',
-  ArtistCountry = 'Country'
+  Popularity = 'popularity',
+  Duration = 'duration',
+  ArtistCountry = 'country'
 }
 
 export type ComparisonResult = {
@@ -82,7 +83,7 @@ const compareGenres = (selectedGenres: string[] | undefined, dailyGenres: string
   const safeDailyGenres = dailyGenres || [];
 
   return {
-    result: similarGenres(safeSelectedGenres, safeDailyGenres) >= 1,
+    result: similarGenres(safeSelectedGenres, safeDailyGenres) >= GENRE_SIMILARITIES,
     message: safeSelectedGenres.length ? `Genres: ${safeSelectedGenres.join(', ')}` : 'No Data',
     selectedValue: safeSelectedGenres.join(', '),
     dailyValue: safeDailyGenres.join(', '),
