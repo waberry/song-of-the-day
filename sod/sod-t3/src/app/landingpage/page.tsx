@@ -107,8 +107,8 @@ export default function LandingPage() {
       const parsedGameState = JSON.parse(gameStateFromStorage);
       const lastResetDate = new Date(parsedGameState.lastResetDate);
       const isSameDay = lastResetDate.toDateString() === today.toDateString();
-  
-      if (!isSameDay) {
+      const allSongsHaveComparison = parsedGameState.pickedSongs.length ? parsedGameState.pickedSongs.every(song => 'comparison' in song) : true;
+      if (!isSameDay || !allSongsHaveComparison) {
         return await resetClientGameState(userId);
       }
       return parsedGameState;

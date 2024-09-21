@@ -9,7 +9,7 @@ const WinAnimation = () => {
     const { innerWidth: width, innerHeight: height } = window;
     setWindowDimensions({ width, height });
 
-    const timer = setTimeout(() => setShowAnimation(false), 5000); // Hide after 5 seconds
+    const timer = setTimeout(() => setShowAnimation(false), 10000); // Hide after 5 seconds
     return () => clearTimeout(timer);
   }, []);
 

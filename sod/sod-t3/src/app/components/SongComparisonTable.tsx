@@ -23,12 +23,12 @@ const SongComparisonTable: React.FC<SongComparisonTableProps> = ({ gameState, da
 
   const commonAttributes = useMemo(() => {
     if (gameState.pickedSongs.length === 0) return {};
-   
+    if (!gameState.pickedSongs[0]?.comparison) return {};
     return comparisonKeys.reduce((acc, key) => {
       const correctValues = gameState.pickedSongs
         .map(song => song.comparison[key])
         .filter(value => value.result)
-        .map(value => value.selectedValue);
+        .map(value => value.dailyValue);
 
       if (correctValues.length > 0 && new Set(correctValues).size === 1) {
         acc[key] = correctValues[0].toString();
@@ -133,7 +133,13 @@ const MysteryRow: React.FC<{
             <div key={key} className="flex items-center">
               {getComparisonIcon(key)}
               <span className="ml-1 mr-1 font-bold">{key}:</span>
-              <span className="ml-auto">{commonAttributes[key] || 'Hidden'}</span>
+              <span className="ml-auto">
+                {commonAttributes[key] ? (
+                  <span className="text-green-300 font-semibold glow">{commonAttributes[key]}</span>
+                ) : (
+                  <span className="text-red-400 font-semibold">Hidden</span>
+                )}
+              </span>
             </div>
           ))}
         </div>

@@ -56,6 +56,7 @@ function pickTrackFields(track: any): Prisma.TrackCreateInput {
               href: artist.href,
               popularity: artist.popularity || 0,
               followers: artist.followers || { total: 0 },
+              genres: artist.genres || [],
             },
           },
         },

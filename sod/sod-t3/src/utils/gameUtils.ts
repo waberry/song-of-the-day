@@ -151,7 +151,6 @@ export const getDetailedSongComparison = async (
 
 export const isCorrectGuess = (selectedSong: Track, dailySong: any): boolean => {
   if (selectedSong.id === dailySong.id) return true;
-  console.log("CHECKING IF CORRECT---->>>>", dailySong);
   const nameMatch = selectedSong.name.toLowerCase() === dailySong.name.toLowerCase();
   const artistMatch = selectedSong.artists.some((artist) =>
     dailySong.artists.some((dailyArtist) => dailyArtist.name.toLowerCase() === artist.name.toLowerCase())
