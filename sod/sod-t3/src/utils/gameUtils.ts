@@ -1,4 +1,5 @@
 import { Track, Artist, Album } from '@prisma/client';
+import { getArtistsCountries } from '~/app/actions/musicbrainz';
 
 // Constants
 const DURATION_THRESHOLD_MS = 1000;
@@ -26,9 +27,15 @@ export type ComparisonResult = {
   };
 };
 
+<<<<<<< Updated upstream
 // Utility functions
 export const removeDuplicates = (genres: string[] | undefined): string[] => 
   Array.from(new Set(genres?.map(genre => genre.trim().toLowerCase()) || []));
+=======
+export const getDetailedSongComparison = (selectedSong: Song, dailySong: Song): Promise<ComparisonResult> => {
+  const selectedYear = new Date(selectedSong.album.releasDate).getFullYear();
+  const dailyYear = new Date(dailySong.album.release_date).getFullYear();
+>>>>>>> Stashed changes
 
 const formatDuration = (ms: number): string => {
   const minutes = Math.floor(ms / 60000);
@@ -120,18 +127,15 @@ export const getDetailedSongComparison = async (
   selectedSong: Track & { artists: Artist[]; album: Album },
   dailySong: any,
 ): Promise<ComparisonResult> => {
-  // console.log("getDetailedSongComparison: daily: ", dailySong)
   const selectedYear = new Date(selectedSong.album.release_date || '').getFullYear();
   const dailyYear = new Date(dailySong.album.release_date || '').getFullYear();
 
   // Assuming we don't have country information, we'll keep it as unknown
-  const selectedArtistCountry = "Unknown";
-  const dailyArtistCountry = "Unknown";
-
-  // Extract genres directly from the artist information
-  // const selectedGenres = removeDuplicates(selectedSongArtists.flatMap(artist => artist.genres));
-  // const dailyGenres = removeDuplicates(dailySongArtists.flatMap(artist => artist.genres));
-
+  let selectedSongArtists = selectedSong.artists.flatMap(a => a.name);
+  let dailySongArtists = dailySong.artists.flatMap(a => a.name);
+  const selectedArtistCountry = await getArtistsCountries(selectedSongArtists);
+  const dailyArtistCountry = await getArtistsCountries(dailySongArtists);
+  console.log("COUNTRIES:", dailySongArtists, selectedSongArtists);
   return {
     [ComparisonKey.Artist]: compareArtists(selectedSong.artists, dailySong.artists),
     [ComparisonKey.Album]: compareAlbums(selectedSong.album, dailySong.album),
@@ -141,10 +145,10 @@ export const getDetailedSongComparison = async (
     [ComparisonKey.Popularity]: comparePopularity(selectedSong.popularity!, dailySong.popularity!),
     [ComparisonKey.Duration]: compareDuration(selectedSong.duration_ms, dailySong.duration_ms),
     [ComparisonKey.ArtistCountry]: {
-      result: selectedArtistCountry === dailyArtistCountry,
+      result: selectedArtistCountry in dailyArtistCountry,
       message: `Artist from ${selectedArtistCountry}`,
       selectedValue: selectedArtistCountry,
-      dailyValue: dailyArtistCountry,
+      dailyValue: dailyArtistCountry.join("&"),
     },
   };
 };
@@ -155,8 +159,9 @@ export const isCorrectGuess = (selectedSong: Track, dailySong: any): boolean => 
   const artistMatch = selectedSong.artists.some((artist) =>
     dailySong.artists.some((dailyArtist) => dailyArtist.name.toLowerCase() === artist.name.toLowerCase())
   );
-  // const durationMatch = Math.abs(selectedSong.duration_ms - dailySong.duration) <= DURATION_THRESHOLD_MS;
+  const durationMatch = Math.abs(selectedSong.duration_ms - dailySong.duration) <= DURATION_THRESHOLD_MS;
   const albumMatch = selectedSong.album.name.toLowerCase() === dailySong.album.name.toLowerCase();
 
-  return nameMatch && artistMatch && albumMatch;
+  return nameMatch && artistMatch && albumMatch && durationMatch;
+  // return nameMatch && artistMatch;
 };

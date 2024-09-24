@@ -1,20 +1,41 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+<<<<<<< Updated upstream
 import { faSearch, faSpinner, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { getGameState, getCommonGameState, getDailySong, saveGameState, getYesterdaySong, setDailySongFound } from "../actions/gameActions";
+=======
+import {
+  faSearch,
+  faSpinner,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
+import {
+  getCommonGameState,
+  getDailySong,
+  saveGameState,
+} from "../actions/gameActions";
+>>>>>>> Stashed changes
 import { api } from "~/trpc/react";
 import LoadingScreen from "../components/loadingScreen";
 import ErrorDisplay from "../components/ErrorDisplay";
 import { PlayerProvider } from "../components/PlayerContext";
 import { getAnonymousUserId } from "~/utils/anonymousUserId";
 import SongComparisonTable from "../components/SongComparisonTable";
+<<<<<<< Updated upstream
 import { GameState, SongWithGenres } from "~/types/types";
 import WinAnimation from "../components/WinAnimation";
 import EnhancedGameHeader from "../components/Header";
 import RulesPopup from "../components/RulesPopup";
 import { YesterdayGuess, YesterdayGuessProps } from "../components/YesterdayGuess";
 
+
+=======
+import { trackType as Song } from "~/types/spotify.types";
+import { GameState } from "~/types/types";
+import { isCorrectGuess, getDetailedSongComparison as compareSongs } from "~/utils/gameUtils";
+import FestiveWinAnimation from "../components/WinAnimation";
+>>>>>>> Stashed changes
 
 export default function LandingPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,9 +72,11 @@ export default function LandingPage() {
         setIsLoading(true);
         const userId = await getAnonymousUserId();
         setAnonymousUserId(userId);
+        
         const commonState = await getCommonGameState();
         setCommonGameState(commonState);
         
+<<<<<<< Updated upstream
         // Initialize game state
         const currentGameState = await initializeOrResetGameState(userId);
         setGameState(currentGameState);
@@ -71,13 +94,56 @@ export default function LandingPage() {
         setDailySong({
           ...fetchedDailySong,
         });
+=======
+        const today = new Date();
+        const gameStateKey = `gameState_${userId}`;
+        const gameStateFromStorage = localStorage.getItem(gameStateKey);
+        
+        let currentGameState: GameState;
+  
+        if (gameStateFromStorage) {
+          const parsedGameState = JSON.parse(gameStateFromStorage);
+          const lastResetDate = new Date(parsedGameState.lastResetDate);
+          const isSameDay = lastResetDate.toDateString() === today.toDateString();
+  
+          if (!isSameDay) {
+            // Reset the game state for a new day
+            currentGameState = {
+              anonymousUserId: userId,
+              pickedSongs: [],
+              dailySongFound: false,
+              guessState: { guessedCorrectly: false, attempts: 0 },
+              lastResetDate: today.toISOString(),
+            };
+          } else {
+            currentGameState = parsedGameState;
+          }
+        } else {
+          // Initialize new game state
+          currentGameState = {
+            anonymousUserId: userId,
+            pickedSongs: [],
+            dailySongFound: false,
+            guessState: { guessedCorrectly: false, attempts: 0 },
+            lastResetDate: today.toISOString(),
+          };
+        }
+  
+        // Save the current game state to localStorage
+        localStorage.setItem(gameStateKey, JSON.stringify(currentGameState));
+        
+        setGameState(currentGameState);
+        
+        const dailySong = await getDailySong();
+        setDailySong(dailySong);
+>>>>>>> Stashed changes
       } catch (err) {
         console.error("Initialization error:", err);
         setError("Failed to load game data. Please try again later.");
         setIsLoading(false);
       }
     }
-
+  
     initializeGameState();
   }, []);
 
@@ -154,6 +220,7 @@ export default function LandingPage() {
     }, 200);
   };
 
+<<<<<<< Updated upstream
   const handleDDSelect = async (selectedSong) => {
     if (!anonymousUserId || !gameState || !dailySong) return;
     if (gameState.pickedSongs.some((pickedSong) => pickedSong.id === selectedSong.id)) {
@@ -191,6 +258,54 @@ export default function LandingPage() {
       setError("Failed to save your guess. Please try again.");
     }
   };
+=======
+  const handleDDSelect = useCallback(async (song: Song) => {
+    if (!anonymousUserId || !gameState || !dailySong) {
+      console.error("Required data is missing:", { anonymousUserId, gameState, dailySong });
+      return;
+    }
+
+    console.log("Song selected:", song);
+    console.log("Current gameState:", gameState);
+    console.log("Daily song:", dailySong);
+
+    if (gameState.pickedSongs.some((pickedSong) => pickedSong.id === song.id)) {
+      setShowPopup(true);
+      return;
+    }
+
+    try {
+      const correct = isCorrectGuess(song, dailySong);
+      const commonMetadata = correct ? null : compareSongs(song, dailySong);
+
+      const newPickedSongs = [
+        { ...song, commonMetadata, isCorrectGuess: correct },
+        ...gameState.pickedSongs,
+      ];
+
+      const newGuessState = {
+        guessedCorrectly: correct || gameState.guessState.guessedCorrectly,
+        attempts: gameState.guessState.attempts + 1,
+      };
+
+      const newGameState = {
+        ...gameState,
+        pickedSongs: newPickedSongs,
+        dailySongFound: correct || gameState.dailySongFound,
+        guessState: newGuessState,
+      };
+
+      const updatedGameState = await saveGameState(anonymousUserId, newGameState);
+      setGameState(updatedGameState);
+      setDropdownVisible(false);
+      setSearchTerm("");
+    } catch (error) {
+      console.error("Error in handleDDSelect:", error);
+      setError("An error occurred while processing your selection. Please try again.");
+    }
+  }, [anonymousUserId, gameState, dailySong, setGameState, setDropdownVisible, setSearchTerm, setError]);
+
+>>>>>>> Stashed changes
 
   if (!gameState && !dailySong && isLoading) {
     return <LoadingScreen />;
@@ -212,13 +327,21 @@ export default function LandingPage() {
             </div>
           </div>
         )}
+<<<<<<< Updated upstream
         {gameState?.dailySongFound && <WinAnimation />}
+=======
+        {gameState?.dailySongFound && <FestiveWinAnimation />}
+>>>>>>> Stashed changes
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
           <EnhancedGameHeader gameState={gameState} />
           <YesterdayGuess song={yesterdaySong} />
         </div>
-
+<<<<<<< Updated upstream
         <div className="container mx-auto mb-4">
+=======
+
+        <div className="container mx-auto mb-4 relative">
+>>>>>>> Stashed changes
           <div className="relative">
             <input
               type="text"
@@ -257,6 +380,7 @@ export default function LandingPage() {
               </button>
             )}
             {dropdownVisible && (
+<<<<<<< Updated upstream
               <ul
               className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white shadow-lg"
               role="listbox"
@@ -267,6 +391,18 @@ export default function LandingPage() {
                 right: 0,
               }}
             >
+=======
+             <ul
+             className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white shadow-lg"
+             role="listbox"
+             style={{
+               position: 'absolute',
+               top: '100%',
+               left: 0,
+               right: 0,
+             }}
+           >
+>>>>>>> Stashed changes
                 {searchTracksQuery.isLoading || searchTracksQuery.isFetching ? (
                   <li className="p-2 text-center">
                     <FontAwesomeIcon icon={faSpinner} spin /> Searching...
@@ -305,6 +441,7 @@ export default function LandingPage() {
             )}
           </div>
         </div>
+<<<<<<< Updated upstream
 
         
         {gameState && dailySong ? (
@@ -316,6 +453,15 @@ export default function LandingPage() {
             <p>Unable to load game data. Please try refreshing the page.</p>
           </div>
         )}
+=======
+        <div>
+          
+        </div>
+        
+        <div className="relative z-0 w-full">
+          <SongComparisonTable gameState={gameState} dailySong={dailySong} />
+        </div>
+>>>>>>> Stashed changes
       </main>
     </PlayerProvider>
   );

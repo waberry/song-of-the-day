@@ -1,13 +1,10 @@
-// app/contact/page.tsx
 "use client";
 
 import { useState } from "react";
-import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { FaUser, FaEnvelope, FaComment } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaComment, FaMusic } from "react-icons/fa";
 
 export default function ContactPage() {
-  const { data: session, status } = useSession();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -29,23 +26,22 @@ export default function ContactPage() {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1500));
     setIsSubmitting(false);
-    setSubmitResult("Thank you for your message. We'll get back to you soon!");
+    setSubmitResult("Thank you for your message. Our music experts will get back to you soon!");
     setFormData({ name: "", email: "", message: "" });
   };
-
-  if (status === "loading") {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div className="container mx-auto mt-10 p-4">
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Contact Us</h1>
-        <Link href="/dashboard" className="text-blue-500 hover:text-blue-700">
-          Back to Dashboard
+        <h1 className="text-3xl font-bold">Contact Song of the Day</h1>
+        <Link href="/" className="text-blue-500 hover:text-blue-700">
+          Back to Home
         </Link>
       </div>
       <div className="rounded-lg bg-white p-8 shadow-lg">
+        <p className="mb-6 text-gray-600">
+          Have a question about our music guessing game? Want to suggest a feature or report an issue? We'd love to hear from you!
+        </p>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label
@@ -109,7 +105,7 @@ export default function ContactPage() {
                 id="message"
                 rows={6}
                 className="block w-full rounded-md border-2 border-gray-300 py-3 pl-10 pr-3 text-base transition duration-150 ease-in-out focus:border-indigo-500 focus:ring-indigo-500"
-                placeholder="Your message"
+                placeholder="Your message or feedback about Song of the Day"
                 value={formData.message}
                 onChange={handleChange}
                 required
@@ -119,10 +115,17 @@ export default function ContactPage() {
           <div>
             <button
               type="submit"
-              className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-3 text-base font-medium text-white shadow-sm transition duration-150 ease-in-out hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              className="flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-3 text-base font-medium text-white shadow-sm transition duration-150 ease-in-out hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Sending..." : "Send Message"}
+              {isSubmitting ? (
+                "Sending..."
+              ) : (
+                <>
+                  <FaMusic className="mr-2" />
+                  Send Message
+                </>
+              )}
             </button>
           </div>
         </form>

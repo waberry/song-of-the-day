@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTwitter, faFacebook, faInstagram } from "@fortawesome/free-brands-svg-icons";
 import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
@@ -15,6 +16,19 @@ const Footer: React.FC = () => {
     setEmail("");
   };
 
+  const shareOnTwitter = () => {
+    const tweetText = encodeURIComponent(`🎵 Can you guess today's mystery tune? 🎵
+
+I just played Song of the Day and it's a real challenge! Test your music knowledge and see if you can beat my score.
+
+🎧 Play now: ${window.location.origin}
+
+#SongOfTheDay #MusicTrivia #GuessTheSong`);
+
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${tweetText}`;
+    window.open(twitterUrl, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <footer className="mt-auto w-full bg-gradient-to-r from-indigo-800 to-purple-900 py-12 text-white">
       <div className="container mx-auto px-4">
@@ -23,24 +37,28 @@ const Footer: React.FC = () => {
             <h3 className="text-2xl font-bold">Song of the Day</h3>
             <p className="text-sm text-gray-300">Guess the daily tune and challenge your music knowledge!</p>
             <div className="flex space-x-4">
-              <a href="#" className="transition-transform duration-300 hover:scale-110" aria-label="Twitter">
+              <button 
+                onClick={shareOnTwitter}
+                className="transition-transform duration-300 hover:scale-110" 
+                aria-label="Share on Twitter"
+              >
                 <FontAwesomeIcon icon={faTwitter} size="lg" />
-              </a>
-              <a href="#" className="transition-transform duration-300 hover:scale-110" aria-label="Facebook">
+              </button>
+              {/* <a href="#" className="transition-transform duration-300 hover:scale-110" aria-label="Facebook">
                 <FontAwesomeIcon icon={faFacebook} size="lg" />
               </a>
               <a href="#" className="transition-transform duration-300 hover:scale-110" aria-label="Instagram">
                 <FontAwesomeIcon icon={faInstagram} size="lg" />
-              </a>
+              </a> */}
             </div>
           </div>
           <div className="space-y-4">
             <h4 className="text-lg font-semibold">Quick Links</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="hover:text-purple-300 transition-colors duration-300">About Us</a></li>
+              <li><Link href="/about" className="hover:text-purple-300 transition-colors duration-300">About Us</Link></li>
               <li><a href="#" className="hover:text-purple-300 transition-colors duration-300">How to Play</a></li>
               <li><a href="#" className="hover:text-purple-300 transition-colors duration-300">FAQs</a></li>
-              <li><a href="#" className="hover:text-purple-300 transition-colors duration-300">Contact</a></li>
+              <li><Link href="/contact" className="hover:text-purple-300 transition-colors duration-300">Contact</Link></li>
             </ul>
           </div>
           <div className="space-y-4">

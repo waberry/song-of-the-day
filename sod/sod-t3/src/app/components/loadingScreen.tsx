@@ -17,7 +17,7 @@ const LoadingScreen: React.FC = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setTip(musicTips[Math.floor(Math.random() * musicTips.length)]);
-    }, 3000);
+    }, 2000);
 
     return () => clearInterval(interval);
   }, []);
