@@ -87,9 +87,17 @@ export interface SearchResults {
     items: Track[];
   };
 }
+
 export interface SongWithGenres extends Song {
   Genres?: string[];
-  comparison: {};
+  comparison: Record<string, ComparisonResult>;
+}
+
+export interface ComparisonResult {
+  result: boolean;
+  dailyValue: string | string[];
+  selectedValue: string | string[];
+  comparison?: 'higher' | 'lower';
 }
 
 export interface GameState {
@@ -101,5 +109,10 @@ export interface GameState {
     guessedCorrectly: boolean;
     attempts: number;
   };
+  lastResetDate: Date;
+}
+
+export interface CommonGameState {
+  id?: number;
   lastResetDate: Date;
 }

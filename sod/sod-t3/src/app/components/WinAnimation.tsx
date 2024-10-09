@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Confetti from 'react-confetti';
 
-<<<<<<< Updated upstream
 const WinAnimation = () => {
-=======
-const FestiveWinAnimation = () => {
->>>>>>> Stashed changes
   const [windowDimensions, setWindowDimensions] = useState({ width: 0, height: 0 });
   const [showAnimation, setShowAnimation] = useState(true);
 
@@ -13,11 +9,7 @@ const FestiveWinAnimation = () => {
     const { innerWidth: width, innerHeight: height } = window;
     setWindowDimensions({ width, height });
 
-<<<<<<< Updated upstream
     const timer = setTimeout(() => setShowAnimation(false), 10000); // Hide after 5 seconds
-=======
-    const timer = setTimeout(() => setShowAnimation(false), 5000); // Hide after 5 seconds
->>>>>>> Stashed changes
     return () => clearTimeout(timer);
   }, []);
 
@@ -41,8 +33,4 @@ const FestiveWinAnimation = () => {
   );
 };
 
-<<<<<<< Updated upstream
 export default WinAnimation;
-=======
-export default FestiveWinAnimation;
->>>>>>> Stashed changes

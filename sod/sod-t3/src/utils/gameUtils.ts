@@ -1,4 +1,6 @@
+import { faLeaf } from '@fortawesome/free-solid-svg-icons';
 import { Track, Artist, Album } from '@prisma/client';
+import { tuple } from 'zod';
 import { getArtistsCountries } from '~/app/actions/musicbrainz';
 
 // Constants
@@ -21,21 +23,15 @@ export type ComparisonResult = {
   [key in ComparisonKey]: {
     result: boolean;
     message: string;
-    selectedValue: string | number;
-    dailyValue: string | number;
+    selectedValue: string | number | string[];
+    dailyValue: string | number | string[];
     comparison?: 'higher' | 'lower' | 'equal';
   };
 };
 
-<<<<<<< Updated upstream
 // Utility functions
 export const removeDuplicates = (genres: string[] | undefined): string[] => 
   Array.from(new Set(genres?.map(genre => genre.trim().toLowerCase()) || []));
-=======
-export const getDetailedSongComparison = (selectedSong: Song, dailySong: Song): Promise<ComparisonResult> => {
-  const selectedYear = new Date(selectedSong.album.releasDate).getFullYear();
-  const dailyYear = new Date(dailySong.album.release_date).getFullYear();
->>>>>>> Stashed changes
 
 const formatDuration = (ms: number): string => {
   const minutes = Math.floor(ms / 60000);
@@ -45,7 +41,6 @@ const formatDuration = (ms: number): string => {
 
 const similarGenres = (selectedGenres: string[], dailyGenres: string[]): number => {
   if (!selectedGenres || !dailyGenres)  return 0;
-  if(!dailyGenres) throw new Error("ye!");
   const dailyGenreSet = new Set(dailyGenres);
   return selectedGenres.filter(genre => dailyGenreSet.has(genre)).length;
 };
@@ -92,8 +87,8 @@ const compareGenres = (selectedGenres: string[] | undefined, dailyGenres: string
   return {
     result: similarGenres(safeSelectedGenres, safeDailyGenres) >= GENRE_SIMILARITIES,
     message: safeSelectedGenres.length ? `Genres: ${safeSelectedGenres.join(', ')}` : 'No Data',
-    selectedValue: safeSelectedGenres.join(', '),
-    dailyValue: safeDailyGenres.join(', '),
+    selectedValue: safeSelectedGenres,
+    dailyValue: safeDailyGenres,
   };
 };
 
@@ -123,6 +118,38 @@ export const truncateGenres = (genres: string, limit: number = 2) => {
   return `${genreList.slice(0, limit).join(' ')} ...`;
 };
 
+function findCommonElements2(arr1: [], arr2: []) {
+
+  // Create an empty object
+  let obj = {};
+
+  // Loop through the first array
+  for (let i = 0; i < arr1.length; i++) {
+
+      // Check if element from first array
+      // already exist in object or not
+      if (!obj[arr1[i]]) {
+
+          // If it doesn't exist assign the
+          // properties equals to the 
+          // elements in the array
+          let element = arr1[i];
+          obj[element] = true;
+      }
+  }
+
+  // Loop through the second array
+  for (let j = 0; j < arr2.length; j++) {
+
+      // Check elements from second array exist
+      // in the created object or not
+      if (obj[arr2[j]]) {
+          return true;
+      }
+  }
+  return false;
+}
+
 export const getDetailedSongComparison = async (
   selectedSong: Track & { artists: Artist[]; album: Album },
   dailySong: any,
@@ -145,10 +172,10 @@ export const getDetailedSongComparison = async (
     [ComparisonKey.Popularity]: comparePopularity(selectedSong.popularity!, dailySong.popularity!),
     [ComparisonKey.Duration]: compareDuration(selectedSong.duration_ms, dailySong.duration_ms),
     [ComparisonKey.ArtistCountry]: {
-      result: selectedArtistCountry in dailyArtistCountry,
+      result: findCommonElements2(selectedArtistCountry, dailyArtistCountry),
       message: `Artist from ${selectedArtistCountry}`,
       selectedValue: selectedArtistCountry,
-      dailyValue: dailyArtistCountry.join("&"),
+      dailyValue: dailyArtistCountry,
     },
   };
 };

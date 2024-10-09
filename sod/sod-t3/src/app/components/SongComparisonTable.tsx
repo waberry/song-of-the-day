@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 import React, { useState, useMemo, useCallback } from 'react';
 import { ComparisonKey, ComparisonResult } from '~/utils/gameUtils';
 import { GameState } from '~/types/types';
@@ -10,13 +9,6 @@ import {
   PersonStanding
 } from 'lucide-react';
 import { Track as Song } from '@prisma/client'
-=======
-import React, { useState, useEffect } from 'react';
-import { getDetailedSongComparison, ComparisonKey } from '~/utils/gameUtils';
-import { GameState } from '~/types/types';
-import { trackType as Song } from "~/types/spotify.types";
-import { Flag, Disc, Calendar, Clock, BarChart2, Tag, Globe, Music, CheckCircle2, Check, ArrowUp, ArrowDown, Minus, TrendingUp } from 'lucide-react';
->>>>>>> Stashed changes
 
 interface SongComparisonTableProps {
   gameState: GameState | null;
@@ -24,21 +16,32 @@ interface SongComparisonTableProps {
 }
 
 const SongComparisonTable: React.FC<SongComparisonTableProps> = ({ gameState, dailySong }) => {
-<<<<<<< Updated upstream
   if (!gameState || !dailySong) return null;
 
   const comparisonKeys = Object.values(ComparisonKey);
 
   const commonAttributes = useMemo(() => {
     if (gameState.pickedSongs.length === 0 || !gameState.pickedSongs[0]?.comparison) return {};
+    
     return comparisonKeys.reduce((acc, key) => {
       const correctValues = gameState.pickedSongs
         .map(song => song.comparison[key])
         .filter(value => value.result)
         .map(value => value.dailyValue);
 
-      if (correctValues.length > 0 && new Set(correctValues).size === 1) {
-        acc[key] = correctValues[0];
+      if (correctValues.length > 0) {
+        if (Array.isArray(correctValues[0])) {
+          // For array values (like genres), find the intersection
+          const intersection = correctValues.reduce((a, b) => 
+            a.filter(value => b.includes(value))
+          );
+          if (intersection.length > 0) {
+            acc[key] = intersection;
+          }
+        } else if (new Set(correctValues).size === 1) {
+          // For single values, use the common value if all are the same
+          acc[key] = correctValues[0];
+        }
       }
       return acc;
     }, {} as Partial<Record<ComparisonKey, string | string[]>>);
@@ -47,7 +50,6 @@ const SongComparisonTable: React.FC<SongComparisonTableProps> = ({ gameState, da
   const latestComparisonData = useMemo(() => {
     return gameState.pickedSongs.length > 0 ? gameState.pickedSongs[gameState.pickedSongs.length - 1].comparison : null;
   }, [gameState]);
-
   return (
     <div className="container mx-auto mb-4">
       <div className="bg-white rounded-xl shadow-md p-3">
@@ -65,153 +67,6 @@ const SongComparisonTable: React.FC<SongComparisonTableProps> = ({ gameState, da
             comparisonKeys={comparisonKeys} 
           />
         ))}
-=======
-  const [commonAttributes, setCommonAttributes] = useState<Partial<Record<ComparisonKey, string>>>({});
-  const [comparisons, setComparisons] = useState<Record<string, any>>({});
-
-  useEffect(() => {
-    const fetchComparisons = async () => {
-      if (!gameState || !dailySong) return;
-
-      const newComparisons: Record<string, any> = {};
-      for (const song of gameState.pickedSongs) {
-        newComparisons[song.id] = await getDetailedSongComparison(song, dailySong);
-      }
-      setComparisons(newComparisons);
-
-      const newCommonAttributes: Partial<Record<ComparisonKey, string>> = {};
-      Object.values(ComparisonKey).forEach(key => {
-        const allValues = Object.values(newComparisons).map(comparison => comparison[key]);
-        const correctValues = allValues.filter(value => value.result).map(value => value.selectedValue);
-
-        if (correctValues.length > 0 && new Set(correctValues).size === 1) {
-          newCommonAttributes[key] = correctValues[0].toString();
-        }
-      });
-
-      setCommonAttributes(newCommonAttributes);
-    };
-
-    fetchComparisons();
-  }, [gameState, dailySong]);
-
-  if (!gameState || !dailySong) {
-    return null;
-  }
-
-  const getComparisonIcon = (key: ComparisonKey) => {
-    switch (key) {
-      case ComparisonKey.Artist: return <Globe size={20} />;
-      case ComparisonKey.Album: return <Disc size={20} />;
-      case ComparisonKey.Year: return <Calendar size={20} />;
-      case ComparisonKey.Decade: return <TrendingUp size={20} />;
-      case ComparisonKey.Genre: return <Tag size={20} />;
-      case ComparisonKey.Popularity: return <BarChart2 size={20} />;
-      case ComparisonKey.Duration: return <Clock size={20} />;
-      case ComparisonKey.ArtistCountry: return <Flag size={20} />;
-
-      default: return null;
-    }
-  };
-
-  const getComparisonResult = (key: ComparisonKey, value: any) => {
-    if (value.result) {
-      return <Check className="text-green-500" size={20} />;
-    }
-    switch (key) {
-      case ComparisonKey.Year:
-      case ComparisonKey.Decade:
-        return value.comparison === 'higher' ? <ArrowUp className="text-red-500" size={20} /> : <ArrowDown className="text-red-500" size={20} />;
-      case ComparisonKey.Popularity:
-      case ComparisonKey.Duration:
-        return value.comparison === 'higher' ? <ArrowUp className="text-blue-500" size={20} /> : <ArrowDown className="text-blue-500" size={20} />;
-      default:
-        return <Minus className="text-red-500" size={20} />;
-    }
-  };
-
-  return (
-    <div className="container w-full mx-auto overflow-hidden">
-      <div className="rounded-xl shadow-md bg-white overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm sticky top-0 z-10">
-                <th className="p-4 text-left font-semibold rounded-tl-xl">
-                  <div className="flex items-center space-x-2">
-                    <Music size={24} />
-                    <span>Mystery Song</span>
-                  </div>
-                </th>
-                {Object.values(ComparisonKey).map((key, index) => (
-                  <th key={key} className={`p-4 text-center font-semibold ${index === Object.values(ComparisonKey).length - 1 ? 'rounded-tr-xl' : ''}`}>
-                    <div className="flex flex-col items-center justify-center">
-                      {getComparisonIcon(key)}
-                      <span className="mt-1">{key}</span>
-                    </div>
-                  </th>
-                ))}
-              </tr>
-              <tr className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-base sticky top-14 z-10 shadow-lg">
-                <td className="p-3 text-left font-medium">
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle2 size={20} />
-                    <span>Common Attributes</span>
-                  </div>
-                </td>
-                {Object.values(ComparisonKey).map((key) => (
-                  <td key={key} className="p-3 text-center">
-                    <div className="flex flex-col items-center justify-center">
-                      {commonAttributes[key] ? (
-                        <span className="text-sm font-medium">{commonAttributes[key]}</span>
-                      ) : (
-                        <span className="text-sm font-medium">-</span>
-                      )}
-                      <span className="text-xs mt-1">{commonAttributes[key] ? 'Common' : 'No match yet'}</span>
-                    </div>
-                  </td>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {gameState.pickedSongs.map((song, index) => {
-                const detailedComparison = comparisons[song.id];
-                const isLastRow = index === gameState.pickedSongs.length - 1;
-                
-                if (!detailedComparison) return null; // Skip if comparison is not loaded yet
-
-                return (
-                  <tr key={song.id} className={`transition-colors duration-150 ease-in-out hover:bg-gray-50`}>
-                    <td className={`p-3 ${isLastRow ? 'rounded-bl-xl' : ''}`}>
-                      <div className="flex items-center space-x-3">
-                        <img
-                          src={song.album.images[0]?.url}
-                          alt={`${song.name} cover`}
-                          className="w-12 h-12 object-cover rounded-md shadow-sm"
-                        />
-                        <span className="font-medium text-sm truncate">{song.name}</span>
-                      </div>
-                    </td>
-                    {Object.entries(detailedComparison).map(([key, value], colIndex) => (
-                      <td 
-                        key={key} 
-                        className={`p-3 text-center ${isLastRow && colIndex === Object.entries(detailedComparison).length - 1 ? 'rounded-br-xl' : ''}`}
-                      >
-                        <div className="flex flex-col items-center justify-center">
-                          {getComparisonResult(key as ComparisonKey, value)}
-                          <span className="text-sm truncate mt-1" title={value.message}>
-                            {value.selectedValue}
-                          </span>
-                        </div>
-                      </td>
-                    ))}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
->>>>>>> Stashed changes
       </div>
     </div>
   );
