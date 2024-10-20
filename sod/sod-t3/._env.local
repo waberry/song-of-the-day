@@ -1,6 +1,0 @@
-SPOTIFY_CLIENT_ID="2919357a76ce4384b349e1060f58a654"
-SPOTIFY_CLIENT_SECRET="af1db6555af149f58921764005462751"
-SPOTIFY_REDIRECT_URI="http://localhost:3000/api/auth/callback/spotify"
-NEXTAUTH_URL="http://localhost:3000" # Use your production URL in production
-NEXTAUTH_SECRET="your_nextauth_secret"
-DATABASE_URL="postgresql://berry:berrysod@db:5432/sod-db"
