@@ -9,6 +9,23 @@ const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 
 // TODO Dry this file
 
+
+// implement a function expecting a parameter caleld SpotifyplaylistID and that returns the list of all the song Id's in this playlist
+export const getSpotifyPlaylistTracks = async (
+  playlistId: string,
+) => {
+  const response = await fetch(
+    `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+    {
+      headers: {
+        Authorization: `Bearer ${getSpotifyAccessToken()}`,
+      },
+    },
+  );
+  const data = await response.json();
+  return data.items.map((item: any) => item.track.id);
+};
+
 export const getSpotifyAccessToken = async (): Promise<string> => {
   const response = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
@@ -72,27 +89,12 @@ export const searchSpotifyTracks = async (
   return data.tracks.items;
 };
 
-export interface yesterdaySongFormat {
-  id: string;
-  name: string;
-  artists: Array<{ id: string; name: string }>;
-  album: {
-    id: string;
-    name: string;
-    release_date: string;
-    images: Array<{ url: string; height: number; width: number }>;
-  };
-  duration_ms: number;
-  popularity: number;
-  preview_url: string | null;
-  external_urls: { spotify: string };
-}
 
-export async function getTrackById(trackId: string, accessToken: string): Promise<yesterdaySongFormat> {
+export async function getTrackById(trackId: string): Promise<any> {
   const response = await fetch(`https://api.spotify.com/v1/tracks/${trackId}`, {
     method: 'GET',
     headers: {
-      'Authorization': `Bearer ${accessToken}`,
+      'Authorization': `Bearer ${getSpotifyAccessToken()}`,
       'Content-Type': 'application/json',
     },
   });
@@ -103,7 +105,7 @@ export async function getTrackById(trackId: string, accessToken: string): Promis
   }
 
   const data = await response.json();
-  return data as yesterdaySongFormat;
+  return data;
 }
 
 export const getTopTracks = async (

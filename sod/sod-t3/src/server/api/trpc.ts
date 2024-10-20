@@ -14,6 +14,9 @@ import { ZodError } from "zod";
 import { db } from "~/server/db";
 // import { headers } from "next/headers";
 import { authOptions } from "~/server/auth";
+import { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
+import { NextRequest } from "next/server";
+import { NextApiRequest, NextApiResponse } from "next";
 /**
  * 1. CONTEXT
  *
@@ -30,14 +33,11 @@ interface CreateContextOptions {
   session: Session | null;
 }
 
-export const createTRPCContext = async (opts: { headers: Headers }) => {
-  const session = await getServerSession(authOptions);
-  return {
-    db,
-    session,
-    ...opts,
-  };
-};
+export async function createTRPCContext({ req }: { req: NextRequest }) {
+  // Context setup - no need to read the body here
+  console.log(req)
+  return { req }; // You can pass other context values here as needed (e.g., auth)
+}
 
 /**
  * 2. INITIALIZATION
@@ -89,6 +89,16 @@ export const createTRPCRouter = t.router;
  * are logged in.
  */
 export const publicProcedure = t.procedure;
+
+
+export const testProcedure = t.procedure.use(({ ctx, next }) => {
+  return next({
+    ctx: ctx,
+  });
+});
+
+
+
 
 /**
  * Protected (authenticated) procedure

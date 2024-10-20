@@ -118,13 +118,34 @@ export const truncateGenres = (genres: string, limit: number = 2) => {
   return `${genreList.slice(0, limit).join(' ')} ...`;
 };
 
-function findCommonElements2<T>(arr1: T[], arr2: T[]): T[] {
-  const set = new Set(arr1);
-  return arr2.filter(item => set.has(item));
+function findCommonElements2(arr1: [], arr2: []) {
+  // Create an empty object
+  let obj = {};
+  // Loop through the first array
+  for (let i = 0; i < arr1.length; i++) {
+      // Check if element from first array
+      // already exist in object or not
+      if (!obj[arr1[i]]) {
+          // If it doesn't exist assign the
+          // properties equals to the 
+          // elements in the array
+          let element = arr1[i];
+          obj[element] = true;
+      }
+  }
+  // Loop through the second array
+  for (let j = 0; j < arr2.length; j++) {
+      // Check elements from second array exist
+      // in the created object or not
+      if (obj[arr2[j]]) {
+          return true;
+      }
+  }
+  return false;
 }
 
 export const getDetailedSongComparison = async (
-  selectedSong: Track & { artists: Artist[]; album: Album },
+  selectedSong: any,
   dailySong: any,
 ): Promise<ComparisonResult> => {
   const selectedYear = new Date(selectedSong.album.release_date || '').getFullYear();
