@@ -152,12 +152,6 @@ model CommonGameState {
 }
 
 model GameState {
-<<<<<<< Updated upstream
-=======
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  anonymousUserId String
-  pickedSongs     Json
->>>>>>> Stashed changes
   dailySongFound  Boolean
   guessState      Json
   lastResetDate   DateTime
