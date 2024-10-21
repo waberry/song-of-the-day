@@ -1,5 +1,5 @@
-import seedrandom from 'seedrandom';
-
+// import seedrandom from 'seedrandom';
+function seedrandom() {return 1;}
 function getRandom64BitNumber(): string {
     const random64BitNumber = BigInt.asUintN(64, BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)));
     return random64BitNumber.toString();

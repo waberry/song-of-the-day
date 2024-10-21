@@ -33,7 +33,7 @@ interface CreateContextOptions {
   session: Session | null;
 }
 
-export async function createTRPCContext({ req }: { req: NextRequest }) {
+export async function createTRPCContext({ req }: { req: Request }) {
   // Context setup - no need to read the body here
   console.log(req)
   return { req }; // You can pass other context values here as needed (e.g., auth)

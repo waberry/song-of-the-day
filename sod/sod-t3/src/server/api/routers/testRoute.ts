@@ -1,12 +1,18 @@
 import { z } from "zod";
 import { createTRPCRouter as router, publicProcedure } from '~/server/api/trpc';
 
-const testRouter = router({
-    test: publicProcedure
-      .input(z.object({
-        name: z.string(),
-      }))
-      .mutation(({ input }) => {
-        return `Hello, ${input.name}`;
-      }),
-  });
+
+export const testRouter = router({
+  test: publicProcedure
+    .input(z.object({
+      name: z.string(),
+      time: z.string()
+    }))
+    .mutation(async ({ input }) => {
+      console.log('Received input:', input);
+      return { 
+        result: 'Input received',
+        inputData: input
+      };
+    }),
+});

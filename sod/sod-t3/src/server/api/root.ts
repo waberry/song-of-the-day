@@ -3,6 +3,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { spotifyRouter } from "./routers/spotify";
 import { gameRouter } from "./routers/game";
 import { guessRouter } from "./routers/guess";
+import { testRouter } from "./routers/testRoute";
 
 /**
  * This is the primary router for your server.
@@ -11,6 +12,7 @@ import { guessRouter } from "./routers/guess";
  */
 export const appRouter = createTRPCRouter({
   guess: guessRouter,
+  test: testRouter,
 });
 
 // export type definition of API
