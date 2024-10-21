@@ -2,19 +2,41 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model Day {
+  id   Int      @id @default(autoincrement())
+  date DateTime @unique @default(now())
+  seed String
+}
 
-    @@index([name])
+model Mode {
+  id         Int     @id @default(autoincrement())
+  name       String
+  playlistId String
+  guesses    Guess[] // One-to-many relationship with Guess
+}
+
+model Guess {
+  id            Int      @id @default(autoincrement())
+  date          DateTime @unique @default(now())
+  userId        Int
+  modeId        Int
+  user          User     @relation(fields: [userId], references: [id])
+  mode          Mode     @relation(fields: [modeId], references: [id])
+  songSpotifyId String
+  success       Boolean
+  diff          Json
+}
+
+model User {
+  id              Int     @id @default(autoincrement())
+  anonymousUserId String  @unique
+  guesses         Guess[] // Opposite relation field
 }
