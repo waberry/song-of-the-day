@@ -28,37 +28,40 @@ export function Modes() {
   });
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardContent className="flex flex-col items-center space-y-4 p-6">
-            <Headphones className="h-12 w-12 text-purple-600 dark:text-purple-400" />
-            <h2 className="text-2xl font-bold">Classic Mode</h2>
-            <p className="text-center text-gray-600 dark:text-gray-300">
-              Guess the song from a short audio clip. Test your ear for music!
-            </p>
-            <Button>Play Classic</Button>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex flex-col items-center space-y-4 p-6">
-            <Zap className="h-12 w-12 text-yellow-500" />
-            <h2 className="text-2xl font-bold">Lightning Round</h2>
-            <p className="text-center text-gray-600 dark:text-gray-300">
-              Rapid-fire questions. How many can you answer in 60 seconds?
-            </p>
-            <Button>Start Lightning Round</Button>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex flex-col items-center space-y-4 p-6">
-            <Award className="h-12 w-12 text-green-500" />
-            <h2 className="text-2xl font-bold">Genre Master</h2>
-            <p className="text-center text-gray-600 dark:text-gray-300">
-              Specialized quizzes for different music genres. Prove your expertise!
-            </p>
-            <Button>Choose Genre</Button>
-          </CardContent>
-        </Card>
-      </div>
+    <div className="w-full max-w-xs">
+      {modes ? (
+        <ul>
+          {modes.map((mode) => (
+            <li key={mode.id} className="">
+              mode name : {mode.name} (Playlist ID: {mode.playlistId}) modeid {mode.id}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>You have no modes</p>
+      )}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          createMode.mutate({ playlistId: playlistId });
+        }}
+        className="flex flex-col gap-2"
+      >
+                <input
+          type="text"
+          placeholder="Playlist ID"
+          value={playlistId}
+          onChange={(e) => setPlaylistId(e.target.value)}
+          className="w-full rounded-full px-4 py-2 text-black"
+        />
+        <button
+          type="submit"
+          className="rounded-full bg-white/10 px-10 py-3 font-semibold transition hover:bg-white/20"
+          disabled={createMode.isPending}
+        >
+          {createMode.isPending ? "Submitting..." : "Submit"}
+        </button>
+      </form>
+    </div>
   );
 } 
