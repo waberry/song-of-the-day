@@ -21,8 +21,8 @@ export function Modes() {
       {modes ? (
         <ul>
           {modes.map((mode) => (
-            <li key={mode.id} className="truncate">
-              {mode.name} (Playlist ID: {mode.playlistId})
+            <li key={mode.id} className="">
+              mode name : {mode.name} (Playlist ID: {mode.playlistId}) modeid {mode.id}
             </li>
           ))}
         </ul>
