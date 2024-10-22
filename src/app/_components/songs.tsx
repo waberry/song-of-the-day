@@ -63,9 +63,9 @@ export function Songs() {
         />
         <input
           type="text"
-          placeholder="Song Spotify ID"
-          value={songSpotifyId}
-          onChange={(e) => setSongSpotifyId(e.target.value)}
+          placeholder="User Anonymous ID"
+          value={userAnonymousId}
+          onChange={(e) => setUserAnonymousId(e.target.value)}
           className="w-full rounded-full px-4 py-2 text-black"
         />
         <button
