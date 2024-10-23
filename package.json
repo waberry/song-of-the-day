@@ -38,10 +38,11 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "server-only": "^0.0.1",
+    "shadcn-ui": "^0.2.3",
     "superjson": "^2.2.1",
+    "swagger-ui-react": "^5.17.14",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
-    "ua-parser-js": "^1.0.39",
     "zod": "^3.23.3"
   },
   "devDependencies": {

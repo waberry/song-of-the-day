@@ -9,7 +9,8 @@ import { modeRouter } from "./routers/modes";
  */
 export const appRouter = createTRPCRouter({
   mode: modeRouter,
-  song: songRouter
+  song: songRouter,
+  player: playerRouter,
 });
 
 // export type definition of API

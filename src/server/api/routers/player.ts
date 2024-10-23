@@ -18,39 +18,11 @@ const userIdentificationSchema = z.object({
 });
 
 export const playerRouter = router({
-  identify: publicProcedure
-    .input(userIdentificationSchema)
-    .mutation(async ({ input }) => {
-      try {
-        // Check if user exists
-        let user = await prisma.user.findUnique({
-          where: {
-            anonymousUserId: input.fingerprint,
-          },
-        });
-
-        // If user doesn't exist, create new one
-        if (!user) {
-          user = await prisma.user.create({
-            data: {
-              anonymousUserId: input.fingerprint,
-            },
-          });
-        }
-
-        return {
-          anonymousUserId: user.anonymousUserId,
-          isNewUser: !user,
-        };
-      } catch (error) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to process user identification',
-          cause: error,
-        });
-      }
-    }),
-
+  hello: publicProcedure
+  .input(z.object({ text: z.string().min(1) }))
+  .query(async ({ input }) => {
+    return "YOOO";
+  }),
   get: publicProcedure
     .input(z.object({
       anonymousUserId: z.string(),
@@ -222,7 +194,6 @@ export const playerRouter = router({
       }
     }),
 });
-
 // Helper function to calculate current streak
 function calculateCurrentStreak(guesses: any[]): number {
   const sortedGuesses = [...guesses].sort((a, b) => 
