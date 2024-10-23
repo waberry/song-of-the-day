@@ -5,7 +5,7 @@ import { Modes } from "~/app/_components/modes";
 import { api, HydrateClient } from "~/trpc/server";
 
 export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
+  const hello = await api.player.hello({ text: "from tRPC" });
 
   void api.mode.getModes.prefetch();
 
@@ -15,7 +15,7 @@ export default async function Home() {
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
           <div className="flex flex-col items-center gap-2">
             <p className="text-2xl text-white">
-              {hello ? hello.greeting : "Loading tRPC query..."}
+              {hello ? hello : "Loading tRPC query..."}
             </p>
           </div>
           <Modes />

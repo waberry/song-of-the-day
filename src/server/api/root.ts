@@ -10,7 +10,7 @@ import { playerRouter } from "./routers/player";
  */
 export const appRouter = createTRPCRouter({
   mode: modeRouter,
-  song: songRouter
+  song: songRouter,
   player: playerRouter,
 });
 

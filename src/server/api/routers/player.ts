@@ -6,6 +6,11 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export const playerRouter = router({
+  hello: publicProcedure
+  .input(z.object({ text: z.string().min(1) }))
+  .query(async ({ input }) => {
+    return "YOOO";
+  }),
   get: publicProcedure
     .input(
       z.object({
