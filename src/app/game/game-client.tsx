@@ -1,18 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { useUser } from "../hooks/useUser";
+import { useEffect } from "react";
+import { useUser } from "~/hooks/useUser";
+import { useGameState } from "~/hooks/useGameState";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api } from "~/trpc/react";
+import { api as trpc } from "~/trpc/react";
 import { SongSearch } from "../_components/song-search";
 
 export function GameClient() {
-  const { anonymousUserId, isLoading } = useUser();
-  const { data: modes } = api.mode.getModes.useQuery();
-  const [selectedMode, setSelectedMode] = useState<number | null>(null);
+  const { anonymousUserId, isLoading: userLoading } = useUser();
+  const { data: modes } = trpc.mode.getModes.useQuery();
+  const { currentMode, setMode } = useGameState();
 
-  if (isLoading) {
+  if (userLoading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
         <span className="loading loading-spinner loading-lg" />
@@ -37,10 +38,13 @@ export function GameClient() {
           <CardTitle>Music Guessing Game</CardTitle>
         </CardHeader>
         <CardContent>
-          {modes && modes?.length ? (
+          {modes?.length ? (
             <Tabs
               defaultValue={modes[0]?.id.toString()}
-              onValueChange={(value) => setSelectedMode(parseInt(value))}
+              onValueChange={(value) => {
+                const mode = modes.find(m => m.id.toString() === value);
+                if (mode) setMode(mode);
+              }}
             >
               <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
                 {modes.map((mode) => (
@@ -51,7 +55,7 @@ export function GameClient() {
               </TabsList>
               {modes.map((mode) => (
                 <TabsContent key={mode.id} value={mode.id.toString()}>
-                  {selectedMode === mode.id && (
+                  {currentMode?.id === mode.id && (
                     <GameMode 
                       modeId={mode.id} 
                       userId={anonymousUserId} 
@@ -69,17 +73,42 @@ export function GameClient() {
   );
 }
 
-// GameMode component will handle individual mode logic
 function GameMode({ modeId, userId }: { modeId: number; userId: string }) {
-  const { data: songToGuess, isLoading } = api.song.getSongToGuess.useQuery({
+  const { 
+    progress,
+    status,
+    canGuess,
+    startGame,
+    makeGuess,
+    currentMode
+  } = useGameState();
+  
+  const { data: songToGuess, isLoading } = trpc.song.getSongToGuess.useQuery({
     userId,
     modeId,
   });
 
-  const handleSongSelect = (songId: string) => {
-    // TODO: Implement guess submission logic
-    console.log("Selected song:", songId);
-    // Here we'll eventually call your guess submission mutation
+  useEffect(() => {
+    if (songToGuess && currentMode) {
+      startGame(currentMode, songToGuess);
+    }
+  }, [songToGuess, currentMode, startGame]);
+
+  const handleSongSelect = async (songId: string) => {
+    // TODO: Get song details from Spotify
+    const songDetails = { id: songId, name: "Test Song", artist: "Test Artist" };
+    
+    makeGuess({
+      songId,
+      songName: songDetails.name,
+      artistName: songDetails.artist,
+      isCorrect: songId === progress?.songToGuess?.id,
+      diff: {
+        // TODO: Implement proper diff logic
+        artist: false,
+        title: false,
+      },
+    });
   };
 
   if (isLoading) {
@@ -94,23 +123,33 @@ function GameMode({ modeId, userId }: { modeId: number; userId: string }) {
             <h3 className="font-semibold mb-2">Make your guess</h3>
             <SongSearch 
               onSelect={handleSongSelect}
-              // TODO  add disabled logic based on game state
-              // disabled={gameOver || maxGuessesReached}
+              disabled={!canGuess}
             />
+            {!canGuess && status === 'won' && (
+              <p className="text-green-500 mt-2">You won! Come back tomorrow for a new song.</p>
+            )}
+            {!canGuess && status === 'lost' && (
+              <p className="text-red-500 mt-2">Game over. Try again tomorrow!</p>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-4">
             <h3 className="font-semibold mb-2">Previous Guesses</h3>
-            {/* TODO: Add guess history component */}
+            {progress?.guesses.map((guess, index) => (
+              <div key={index} className="py-2">
+                {guess.songName} - {guess.artistName}
+                {/* TODO: Add proper guess visualization */}
+              </div>
+            ))}
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-4">
             <h3 className="font-semibold mb-2">Statistics</h3>
-            {/* TODO: Add stats component */}
+            <p>Attempts: {progress?.attempts || 0}</p>
           </CardContent>
         </Card>
       </div>
