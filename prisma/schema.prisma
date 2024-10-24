@@ -18,7 +18,7 @@ model Day {
 
 model Mode {
   id         Int     @id @default(autoincrement())
-  name       String
+  name       String  @unique
   playlistId String
   guesses    Guess[] // One-to-many relationship with Guess
 }
