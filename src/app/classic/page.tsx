@@ -51,7 +51,6 @@ const searchTracks = async (term) => {
 
 const GuessCard = ({ guess, index }) => {
   const { matchStatus } = guess
-
   return (
     <Card className="mb-4 overflow-hidden">
       <CardContent className="p-4">
