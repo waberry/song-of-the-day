@@ -9,7 +9,6 @@ import { modeRouter } from "./routers/modes";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  post: postRouter,
   mode: modeRouter,
   song: songRouter
 });

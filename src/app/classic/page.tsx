@@ -3,22 +3,22 @@
 import React, { useState, useEffect } from "react"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faSearch, faSpinner, faTimes, faCheck, faXmark, faArrowDown, faArrowUp } from "@fortawesome/free-solid-svg-icons"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Button } from "src/components/ui/button"
+import { Input } from "src/components/ui/input"
+import { Card, CardContent, CardHeader } from "src/components/ui/card"
+import { Badge } from "src/components/ui/badge"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "src/components/ui/tabs"
 import { Music, Play, Users, Award, Twitter } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 
 // Enhanced mock functions
-const getGameState = async () => ({ 
-  dailySongFound: false, 
+const getGameState = async () => ({
+  dailySongFound: false,
   pickedSongs: [
-    { 
-      id: "1", 
-      name: "Bohemian Rhapsody", 
+    {
+      id: "1",
+      name: "Bohemian Rhapsody",
       artists: [{ name: "Queen" }],
       album: { name: "A Night at the Opera", images: [{ url: "/placeholder.svg" }] },
       matchStatus: {
@@ -32,9 +32,9 @@ const getGameState = async () => ({
   remainingGuesses: 5
 })
 
-const getDailySong = async () => ({ 
-  id: "daily", 
-  name: "Daily Song", 
+const getDailySong = async () => ({
+  id: "daily",
+  name: "Daily Song",
   artists: [{ name: "Artist" }],
   genre: "Rock",
   year: 1975
@@ -51,7 +51,7 @@ const searchTracks = async (term) => {
 
 const GuessCard = ({ guess, index }) => {
   const { matchStatus } = guess
-  
+
   return (
     <Card className="mb-4 overflow-hidden">
       <CardContent className="p-4">
@@ -79,8 +79,8 @@ const GuessCard = ({ guess, index }) => {
               Genre
             </Badge>
             <Badge variant="outline" className="flex items-center">
-              <FontAwesomeIcon 
-                icon={matchStatus.yearDiff > 0 ? faArrowDown : faArrowUp} 
+              <FontAwesomeIcon
+                icon={matchStatus.yearDiff > 0 ? faArrowDown : faArrowUp}
                 className="mr-1 text-indigo-500"
               />
               {Math.abs(matchStatus.yearDiff)} year{Math.abs(matchStatus.yearDiff) !== 1 ? 's' : ''}
@@ -190,7 +190,7 @@ export default function LandingPage() {
             <TabsTrigger value="daily">Daily Challenge</TabsTrigger>
             <TabsTrigger value="multiplayer">Multiplayer</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="daily" className="mt-6">
             <Card className="bg-gradient-to-br from-purple-600 to-purple-700 text-white">
               <CardContent className="flex flex-col items-center space-y-6 p-8">
