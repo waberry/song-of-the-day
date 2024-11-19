@@ -2,17 +2,19 @@
 
 import React, { useState, useEffect } from "react"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faSearch, faSpinner, faTimes, faCheck, faXmark, faArrowDown, faArrowUp } from "@fortawesome/free-solid-svg-icons"
-import { Button } from "src/components/ui/button"
-import { Input } from "src/components/ui/input"
-import { Card, CardContent, CardHeader } from "src/components/ui/card"
-import { Badge } from "src/components/ui/badge"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "src/components/ui/tabs"
-import { Music, Play, Users, Award, Twitter } from "lucide-react"
+import { faSearch, faSpinner, faTimes, faCheck, faXmark, faArrowDown, faArrowUp, faMoon, faSun } from "@fortawesome/free-solid-svg-icons"
+import GuessCard from "src/app/_components/guessCard"
+import Header from "src/app/_components/header";
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Music, Play, Users, Award, Twitter, Headphones, Zap } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 
-// Enhanced mock functions
+// Enhanced mock functions (unchanged)
 const getGameState = async () => ({
   dailySongFound: false,
   pickedSongs: [
@@ -49,49 +51,6 @@ const searchTracks = async (term) => {
   ].filter(song => song.name.toLowerCase().includes(term.toLowerCase()) || song.artists[0].name.toLowerCase().includes(term.toLowerCase()))
 }
 
-const GuessCard = ({ guess, index }) => {
-  const { matchStatus } = guess
-
-  return (
-    <Card className="mb-4 overflow-hidden">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-800 font-semibold">
-              {index + 1}
-            </span>
-            <div>
-              <h3 className="font-semibold">{guess.name}</h3>
-              <p className="text-sm text-gray-600">{guess.artists[0].name}</p>
-            </div>
-          </div>
-          <div className="flex space-x-2">
-            <Badge variant={matchStatus.nameMatch ? "success" : "destructive"}>
-              <FontAwesomeIcon icon={matchStatus.nameMatch ? faCheck : faXmark} className="mr-1" />
-              Title
-            </Badge>
-            <Badge variant={matchStatus.artistMatch ? "success" : "destructive"}>
-              <FontAwesomeIcon icon={matchStatus.artistMatch ? faCheck : faXmark} className="mr-1" />
-              Artist
-            </Badge>
-            <Badge variant={matchStatus.genreMatch ? "success" : "destructive"}>
-              <FontAwesomeIcon icon={matchStatus.genreMatch ? faCheck : faXmark} className="mr-1" />
-              Genre
-            </Badge>
-            <Badge variant="outline" className="flex items-center">
-              <FontAwesomeIcon
-                icon={matchStatus.yearDiff > 0 ? faArrowDown : faArrowUp}
-                className="mr-1 text-indigo-500"
-              />
-              {Math.abs(matchStatus.yearDiff)} year{Math.abs(matchStatus.yearDiff) !== 1 ? 's' : ''}
-            </Badge>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
 export default function LandingPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [dropdownVisible, setDropdownVisible] = useState(false)
@@ -100,6 +59,8 @@ export default function LandingPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchResults, setSearchResults] = useState([])
   const [isSearching, setIsSearching] = useState(false)
+  const [darkMode, setDarkMode] = useState(false) //TODO this is handled in navbar
+
 
   useEffect(() => {
     async function initializeGameState() {
@@ -134,6 +95,8 @@ export default function LandingPage() {
     }
   }, [searchTerm])
 
+
+
   const handleSearch = (value) => {
     if (gameState?.dailySongFound) return
     setSearchTerm(value.toLowerCase())
@@ -159,58 +122,29 @@ export default function LandingPage() {
     setSearchTerm("")
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-sky-400 to-indigo-800">
-        <FontAwesomeIcon icon={faSpinner} spin className="text-4xl text-white" />
-      </div>
-    )
-  }
+
+
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-sky-400 to-indigo-800 dark:from-gray-900 dark:to-indigo-900">
+  //       <FontAwesomeIcon icon={faSpinner} spin className="text-4xl text-white" />
+  //     </div>
+  //   )
+  // }
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-sky-400 to-indigo-800">
-      <header className="flex h-14 items-center justify-between px-4 lg:px-6">
-        <Link href="/" className="flex items-center text-2xl font-bold text-white">
-          <Music className="mr-2 h-6 w-6" />
-          MusicMaestro
-        </Link>
-        <nav className="flex gap-4 sm:gap-6">
-          <Link href="#" className="text-sm font-medium text-white hover:underline">
-            How to Play
-          </Link>
-          <Link href="#" className="text-sm font-medium text-white hover:underline">
-            Leaderboard
-          </Link>
-        </nav>
-      </header>
+    <main className={`flex py-8 flex-col bg-gradient-to-b from-sky-400 to-indigo-800 dark:from-gray-900 dark:to-indigo-900 transition-colors duration-300 ${darkMode ? 'dark' : ''}`}>
 
-      <main className="flex flex-1 flex-col items-center justify-start gap-8 px-4 py-8">
-        <Tabs defaultValue="daily" className="w-full max-w-3xl">
-          <TabsList className="grid w-full grid-cols-2">
+      <div className="flex flex-1 flex-col items-center justify-start gap-8 px-4 py-8">
+        <Tabs defaultValue="daily" className="w-full max-w-4xl">
+          <TabsList className="grid w-full grid-cols-3 mb-8">
             <TabsTrigger value="daily">Daily Challenge</TabsTrigger>
+            <TabsTrigger value="modes">Game Modes</TabsTrigger>
             <TabsTrigger value="multiplayer">Multiplayer</TabsTrigger>
           </TabsList>
 
           <TabsContent value="daily" className="mt-6">
-            <Card className="bg-gradient-to-br from-purple-600 to-purple-700 text-white">
-              <CardContent className="flex flex-col items-center space-y-6 p-8">
-                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-                  What is the <span className="flex justify-center gap-1 py-2">
-                    <span className="inline-block rounded bg-sky-400 px-3 py-1">S</span>
-                    <span className="inline-block rounded bg-sky-400 px-3 py-1">O</span>
-                    <span className="inline-block rounded bg-sky-400 px-3 py-1">N</span>
-                    <span className="inline-block rounded bg-sky-400 px-3 py-1">G</span>
-                  </span> of the day?
-                </h1>
-                <p className="text-xl">The song of the day is hidden. Can you guess it?</p>
-                <p className="text-lg">Attempts: {gameState.remainingGuesses}</p>
-                <p>Use the search box below to make your guess!</p>
-                <Button variant="secondary" className="flex items-center gap-2">
-                  <Twitter className="h-4 w-4" />
-                  Share Progress
-                </Button>
-              </CardContent>
-            </Card>
+
 
             <div className="mt-6">
               <div className="relative">
@@ -224,21 +158,21 @@ export default function LandingPage() {
                   disabled={gameState?.dailySongFound}
                   className={`h-12 w-full rounded-full pl-12 pr-4 text-base transition-all duration-300 ease-in-out ${
                     gameState?.dailySongFound
-                      ? "cursor-not-allowed border-gray-300 bg-gray-100 text-gray-400"
-                      : "border-indigo-300 bg-white text-gray-800 shadow-md hover:shadow-lg focus:border-indigo-500 focus:shadow-lg"
+                      ? "cursor-not-allowed border-gray-300 bg-gray-100 text-gray-400 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400"
+                      : "border-indigo-300 bg-white text-gray-800 shadow-md hover:shadow-lg focus:border-indigo-500 focus:shadow-lg dark:border-indigo-600 dark:bg-gray-800 dark:text-white"
                   }`}
                 />
                 <FontAwesomeIcon
                   icon={faSearch}
                   className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-xl ${
-                    gameState?.dailySongFound ? "text-gray-400" : "text-indigo-500"
+                    gameState?.dailySongFound ? "text-gray-400" : "text-indigo-500 dark:text-indigo-400"
                   }`}
                 />
                 {!gameState?.dailySongFound && searchTerm && (
                   <button
                     type="button"
                     onClick={() => setSearchTerm("")}
-                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600"
+                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100"
                   >
                     <FontAwesomeIcon icon={faTimes} className="text-lg" />
                   </button>
@@ -246,28 +180,28 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <Card className="mt-6 bg-purple-600 text-white">
+            <Card className="mt-6 bg-purple-600 text-white dark:bg-purple-800">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
                   <Music className="h-6 w-6" />
                   <h2 className="text-xl font-semibold">Mystery Song</h2>
                 </div>
-                <div className="mt-4 grid gap-4">
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <div className="flex items-center justify-between">
-                    <span>artists:</span>
-                    <span className="text-purple-300">Hidden</span>
+                    <span>Artists:</span>
+                    <span className="text-purple-300 dark:text-purple-200">Hidden</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span>album:</span>
-                    <span className="text-purple-300">Hidden</span>
+                    <span>Album:</span>
+                    <span className="text-purple-300 dark:text-purple-200">Hidden</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span>year:</span>
-                    <span className="text-purple-300">Hidden</span>
+                    <span>Year:</span>
+                    <span className="text-purple-300 dark:text-purple-200">Hidden</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span>decade:</span>
-                    <span className="text-purple-300">Hidden</span>
+                    <span>Decade:</span>
+                    <span className="text-purple-300 dark:text-purple-200">Hidden</span>
                   </div>
                 </div>
               </CardContent>
@@ -281,22 +215,22 @@ export default function LandingPage() {
                       <FontAwesomeIcon icon={faSpinner} spin /> Searching...
                     </div>
                   ) : searchResults.length > 0 ? (
-                    <ul className="divide-y">
+                    <ul className="divide-y dark:divide-gray-700">
                       {searchResults.map((song) => (
                         <li
                           key={song.id}
-                          className="flex cursor-pointer items-center p-4 hover:bg-gray-50"
+                          className="flex cursor-pointer items-center p-4 hover:bg-gray-50 dark:hover:bg-gray-800"
                           onClick={() => handleDDSelect(song)}
                         >
                           <div>
                             <p className="font-medium">{song.name}</p>
-                            <p className="text-sm text-gray-500">{song.artists[0].name}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{song.artists[0].name}</p>
                           </div>
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <div className="p-4 text-center text-gray-500">No results found</div>
+                    <div className="p-4 text-center text-gray-500 dark:text-gray-400">No results found</div>
                   )}
                 </CardContent>
               </Card>
@@ -321,8 +255,8 @@ export default function LandingPage() {
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <p className="text-gray-500">No guesses yet. Start searching and guessing!</p>
-                      <p className="text-sm text-gray-400 mt-2">
+                      <p className="text-gray-500 dark:text-gray-400">No guesses yet. Start searching and guessing!</p>
+                      <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
                         Try to guess the song in as few attempts as possible.
                       </p>
                     </div>
@@ -332,15 +266,50 @@ export default function LandingPage() {
             )}
           </TabsContent>
 
+          <TabsContent value="modes">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <Card>
+                <CardContent className="flex flex-col items-center space-y-4 p-6">
+                  <Headphones className="h-12 w-12 text-purple-600 dark:text-purple-400" />
+                  <h2 className="text-2xl font-bold">Classic Mode</h2>
+                  <p className="text-center text-gray-600 dark:text-gray-300">
+                    Guess the song from a short audio clip. Test your ear for music!
+                  </p>
+                  <Button>Play Classic</Button>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="flex flex-col items-center space-y-4 p-6">
+                  <Zap className="h-12 w-12 text-yellow-500" />
+                  <h2 className="text-2xl font-bold">Lightning Round</h2>
+                  <p className="text-center text-gray-600 dark:text-gray-300">
+                    Rapid-fire questions. How many can you answer in 60 seconds?
+                  </p>
+                  <Button>Start Lightning Round</Button>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="flex flex-col items-center space-y-4 p-6">
+                  <Award className="h-12 w-12 text-green-500" />
+                  <h2 className="text-2xl font-bold">Genre Master</h2>
+                  <p className="text-center text-gray-600 dark:text-gray-300">
+                    Specialized quizzes for different music genres. Prove your expertise!
+                  </p>
+                  <Button>Choose Genre</Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
           <TabsContent value="multiplayer">
             <Card>
               <CardContent className="flex flex-col items-center space-y-4 p-6">
-                <Users className="h-12 w-12 text-purple-600" />
+                <Users className="h-12 w-12 text-purple-600 dark:text-purple-400" />
                 <h2 className="text-2xl font-bold">Multiplayer Mode</h2>
-                <p className="text-center text-gray-600">
+                <p className="text-center text-gray-600 dark:text-gray-300">
                   Challenge your friends in real-time! Create a room or join an existing one to compete.
                 </p>
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-4">
                   <Button>Create Room</Button>
                   <Button variant="outline">Join Room</Button>
                 </div>
@@ -348,38 +317,38 @@ export default function LandingPage() {
             </Card>
           </TabsContent>
         </Tabs>
-      </main>
+      </div>
 
-      <section className="bg-white py-12 md:py-24">
+      <section className="bg-white dark:bg-gray-800 py-12 md:py-24">
         <div className="container mx-auto px-4">
-          <h2 className="mb-8 text-center text-3xl font-bold">Features</h2>
+          <h2 className="mb-8 text-center text-3xl font-bold dark:text-white">Features</h2>
           <div className="grid gap-8 md:grid-cols-3">
             <Card>
               <CardContent className="flex flex-col items-center p-6 text-center">
-                <Play className="mb-4 h-12 w-12 text-indigo-500" />
+                <Play className="mb-4 h-12 w-12 text-indigo-500 dark:text-indigo-400" />
                 <h3 className="mb-2 text-xl font-semibold">Daily Challenges</h3>
-                <p className="text-gray-600">New song to guess every day. How fast can you identify it?</p>
+                <p className="text-gray-600 dark:text-gray-300">New song to guess every day. How fast can you identify it?</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="flex flex-col items-center p-6 text-center">
-                <Users className="mb-4 h-12 w-12 text-indigo-500" />
+                <Users className="mb-4 h-12 w-12 text-indigo-500 dark:text-indigo-400" />
                 <h3 className="mb-2 text-xl font-semibold">Multiplayer Mode</h3>
-                <p className="text-gray-600">Compete with friends in real-time. Who's the fastest music guru?</p>
+                <p className="text-gray-600 dark:text-gray-300">Compete with friends in real-time. Who's the fastest music guru?</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="flex flex-col items-center p-6 text-center">
-                <Award className="mb-4 h-12 w-12 text-indigo-500" />
+                <Award className="mb-4 h-12 w-12 text-indigo-500 dark:text-indigo-400" />
                 <h3 className="mb-2 text-xl font-semibold">Diverse Quizzes</h3>
-                <p className="text-gray-600">From pop to classical, test your knowledge across all genres.</p>
+                <p className="text-gray-600 dark:text-gray-300">From pop to classical, test your knowledge across all genres.</p>
               </CardContent>
             </Card>
           </div>
         </div>
       </section>
 
-      <footer className="border-t bg-white/10 py-6">
+      <footer className="border-t bg-white/10 py-6 dark:bg-gray-800/10">
         <div className="container mx-auto flex flex-col items-center justify-between px-4 text-white sm:flex-row">
           <p className="text-sm">© 2024 MusicMaestro. All rights reserved.</p>
           <nav className="mt-4 flex gap-4 sm:mt-0">
@@ -392,6 +361,6 @@ export default function LandingPage() {
           </nav>
         </div>
       </footer>
-    </div>
+    </main>
   )
 }
