@@ -11,6 +11,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Award, Headphones, Zap } from "lucide-react"
 
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Award, Headphones, Zap } from "lucide-react"
+
 export function Modes() {
   const [modes] = api.mode.getModes.useSuspenseQuery();
   const queryClient = useQueryClient();
