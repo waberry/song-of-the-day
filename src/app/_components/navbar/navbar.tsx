@@ -14,7 +14,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [status, setStatus] = useState("loading");
+  const [status, setStatus] = useState("");//TODO 
   const [session, setSession] = useState(null);
 
   const navLinks: NavLink[] = [

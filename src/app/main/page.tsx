@@ -3,17 +3,17 @@
 import React, { useState, useEffect } from "react"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faSearch, faSpinner, faTimes, faCheck, faXmark, faArrowDown, faArrowUp, faMoon, faSun } from "@fortawesome/free-solid-svg-icons"
-import GuessCard from "src/app/_components/guessCard"
-import Header from "src/app/_components/header";
+import GuessCard from "src/app/_components/main/guessCard"
+import Header from "src/app/_components/main/header";
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Music, Play, Users, Award, Twitter, Headphones, Zap } from "lucide-react"
+import { Music, Play, Users, Award, Twitter, Headphones, Zap, Car } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-
+import SongComparisonTable from "../_components/main/songComparisonTable"
 // Enhanced mock functions (unchanged)
 const getGameState = async () => ({
   dailySongFound: false,
@@ -180,33 +180,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <Card className="mt-6 bg-purple-600 text-white dark:bg-purple-800">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <Music className="h-6 w-6" />
-                  <h2 className="text-xl font-semibold">Mystery Song</h2>
-                </div>
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <div className="flex items-center justify-between">
-                    <span>Artists:</span>
-                    <span className="text-purple-300 dark:text-purple-200">Hidden</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Album:</span>
-                    <span className="text-purple-300 dark:text-purple-200">Hidden</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Year:</span>
-                    <span className="text-purple-300 dark:text-purple-200">Hidden</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Decade:</span>
-                    <span className="text-purple-300 dark:text-purple-200">Hidden</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
             {dropdownVisible && searchTerm && (
               <Card className="absolute z-50 mt-1 w-full max-h-60 overflow-auto">
                 <CardContent className="p-0">
@@ -236,34 +209,11 @@ export default function LandingPage() {
               </Card>
             )}
 
-            {gameState && dailySong && (
-              <Card className="mt-6">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-semibold">Your Guesses</h2>
-                    <Badge variant="outline" className="text-lg">
-                      {gameState.remainingGuesses} guesses remaining
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-4">
-                  {gameState.pickedSongs.length > 0 ? (
-                    <div className="space-y-4">
-                      {gameState.pickedSongs.map((song, index) => (
-                        <GuessCard key={song.id} guess={song} index={index} />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <p className="text-gray-500 dark:text-gray-400">No guesses yet. Start searching and guessing!</p>
-                      <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
-                        Try to guess the song in as few attempts as possible.
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+
+          <Card className=" z-50 mt-1 overflow-auto">
+            <SongComparisonTable gameState={gameState} dailySong={dailySong} />
+          </Card>
+          
           </TabsContent>
 
           <TabsContent value="modes">
