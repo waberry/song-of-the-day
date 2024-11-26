@@ -10,6 +10,7 @@ import DailyChallenge from "../_components/main/DailyChallenge"
 import { ResponsiveTabs } from "../_components/main/ResponsiveTabs"
 import { SearchInput } from "../_components/main/SearchBar"
 import SongComparisonTable from "../_components/main/SongComparisonTable"
+import LoadingScreen from "../_components/loadingScreens/loadingScreen"
 
 
 // Enhanced mock functions (unchanged)
@@ -199,9 +200,7 @@ export default function LandingPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-sky-400 to-indigo-800 dark:from-gray-900 dark:to-indigo-900">
-        <div className="text-4xl text-white">Loading...</div>
-      </div>
+      <LoadingScreen />
     )
   }
 
