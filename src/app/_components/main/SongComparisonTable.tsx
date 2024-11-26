@@ -158,7 +158,7 @@ const MysteryContent: React.FC<{
           <span className="ml-1 mr-1 font-bold">{key}:</span>
           <span className="ml-auto">
             {commonAttributes[key] ? (
-              <span className="text-green-300 font-semibold glow">{formatValue(commonAttributes[key])}</span>
+              <span className="text-green-300 font-semibold glow">{formatValue(commonAttributes[key], key)}</span>
             ) : (
               <span className="text-red-400 font-semibold">Hidden</span>
             )}

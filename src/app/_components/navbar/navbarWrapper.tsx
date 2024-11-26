@@ -8,7 +8,7 @@ export default async function NavbarWrapper() {
   const session = null
   return (
     <>
-      <Navbar session={session} />
+      <Navbar />
     </>
   );
 }

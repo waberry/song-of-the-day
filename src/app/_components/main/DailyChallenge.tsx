@@ -1,32 +1,24 @@
-import React, { useState, useEffect } from "react"
-import { GameState } from "~/types/types";
-import { FlipBoard } from './animatedText';
-import ShareButton from './shareButtons/twitter';
-import Link from "next/link"
-import { Music } from "lucide-react"
+import React from 'react';
+import { GameState } from "src/types/types";
+import { FlipBoard } from './AnimatedText';
+import ShareButton from './ShareOnTwitter';
 
-
-
-
-interface HeaderProps {
+interface EnhancedGameHeaderProps {
   gameState: GameState | null;
-  darkMode: Bool | null;
 }
 
-const HeaderProps: React.FC<HeaderProps> = ({ gameState }) => {
-
-
+const EnhancedGameHeader: React.FC<EnhancedGameHeaderProps> = ({ gameState }) => {
   return (
     <header className="text-center py-8 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg shadow-lg">
       <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-4 flex items-center justify-center flex-wrap">
         <span>What is the </span>
-        <FlipBoard
-          text="SONG"
+        <FlipBoard 
+          text="SONG" 
           className="text-emerald-300 inline-block mx-2"
         />
         <span>of the day?</span>
       </h1>
-
+      
       <div className="mt-6">
         {gameState?.dailySongFound ? (
           <div className="animate-bounce">
@@ -46,17 +38,18 @@ const HeaderProps: React.FC<HeaderProps> = ({ gameState }) => {
           </>
         )}
       </div>
-
+      
       <div className="mt-8 flex flex-col items-center justify-center">
         <p className="text-sm opacity-75 mb-2">
-          {gameState?.dailySongFound
-            ? "Share your achievement!"
+          {gameState?.dailySongFound 
+            ? "Share your achievement!" 
             : "Use the search box below to make your guess!"}
         </p>
         {gameState && <ShareButton gameState={gameState} />}
       </div>
     </header>
+    
   );
 };
 
-export default HeaderProps;
+export default EnhancedGameHeader;
