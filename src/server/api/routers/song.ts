@@ -6,12 +6,21 @@ import { getRandom64BitNumber } from "~/utils";
 
 const prisma = new PrismaClient();
 
+// To put in the Guess Service Layer
+enum Comparison {
+  Smaller = -1,
+  Equal = 0,
+  Bigger = 1
+}
+
+
 export const songRouter = createTRPCRouter({
   getSongToGuess: publicProcedure
     .input(
       z.object({
         anonymousUserId: z.string(),
         modeId: z.number(),
+        songSpotifyId: z.string()
       })
     ).query(async ({ input }) => {
     console.log('Validated input:', input); // Zod validates the input here
@@ -74,8 +83,8 @@ export const songRouter = createTRPCRouter({
 
     console.log("returned ",response)
 
-    return response
 
+    const todaysUserGuesses = 0
 
     // // Count successful guesses for today
     // let todaysUserGuesses = await prisma.guess.count({
@@ -95,18 +104,31 @@ export const songRouter = createTRPCRouter({
 
     // // Compare the song to guess with the provided song ID
     // const detailedComparison = await compareSongs(songToGuessSpotifyId, songSpotifyId);
-
-    // // Store the guess in the database
-    // const guess = await prisma.guess.create({
-    //   data: {
-    //     userId: user.id,
-    //     date: new Date(),
-    //     modeId: mode.id,
-    //     songSpotifyId: songSpotifyId,
-    //     success: songToGuessSpotifyId === songSpotifyId,
-    //     diff: detailedComparison,
-    //   },
-    // });
+   
+    // Static comparison for now, we need to compute the comparison correctly when we add the spotify and brainz services
+    let detailedComparison = {
+      artists: [{name: "Kanye West", success: true}, {name: "Chance The Rapper", success: false}],
+      albumName: false,
+      duration: Comparison.Bigger,
+      years: Comparison.Smaller,
+      decades: Comparison.Smaller,
+      genres: [{name: "rap", success: true}, {name: "pop", success: false}],
+      popularity: Comparison.Bigger,
+      countries: [{name: "USA", success: true}, {name: "China", success: false}]
+    }
+    
+    // Store the guess in the database
+    const guess = await prisma.guess.create({
+      data: {
+        userId: user.id,
+        date: new Date(),
+        modeId: mode.id,
+        songSpotifyId: input.songSpotifyId,
+        success: true,
+        diff: detailedComparison,
+      },
+    });
+    return response
 
     // return guess;
   }),
