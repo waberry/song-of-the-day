@@ -1,5 +1,6 @@
 import { type Config } from "tailwindcss";
 import { fontFamily } from "tailwindcss/defaultTheme";
+import type { PluginAPI } from 'tailwindcss/types/config'
 
 export default {
     darkMode: ["class"],
@@ -56,7 +57,54 @@ export default {
   				'5': 'hsl(var(--chart-5))'
   			}
   		}
-  	}
+  	},
+  	keyframes: {
+		spin: {
+			'0%': {
+				transform: 'translateY(-50%) rotate(0deg)'
+			},
+			'100%': {
+				transform: 'translateY(-50%) rotate(360deg)'
+			}
+		},
+		bounce: {
+			'0%, 100%': {
+				transform: 'translateY(-25%)',
+				animationTimingFunction: 'cubic-bezier(0.8, 0, 1, 1)'
+			},
+			'50%': {
+				transform: 'translateY(0)',
+				animationTimingFunction: 'cubic-bezier(0, 0, 0.2, 1)'
+			}
+		},
+		flipboard: {
+			'0%': { transform: 'rotateX(0deg)' },
+			'100%': { transform: 'rotateX(360deg)' },
+		},
+	},
+	animation: {
+		'flipboard': 'flipboard 0.6s cubic-bezier(0.455, 0.030, 0.515, 0.955)',
+		'spin-slow': 'spin 3s linear infinite',
+		bounce: 'bounce 1s infinite'
+	},
+	
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwind-scrollbar"),
+    function ({ addUtilities }: PluginAPI) {
+      const newUtilities = {
+        ".mask-linear-gradient": {
+          "mask-image":
+            "linear-gradient(to bottom, black calc(100% - 64px), transparent 100%)",
+          "-webkit-mask-image":
+            "linear-gradient(to bottom, black calc(100% - 64px), transparent 100%)",
+        },
+      };
+      addUtilities(newUtilities, ["responsive", "hover"]);
+    },
+      require("tailwindcss-animate")
+],
+  variants: {
+    scrollbar: ["rounded"],
+  },
 } satisfies Config;

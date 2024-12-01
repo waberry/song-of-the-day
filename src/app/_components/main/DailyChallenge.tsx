@@ -1,6 +1,6 @@
 import React from 'react';
 import { GameState } from "src/types/types";
-import { FlipBoard } from './AnimatedText';
+import { FlipBoard } from './FlipBoard';
 import ShareButton from './ShareOnTwitter';
 
 interface EnhancedGameHeaderProps {

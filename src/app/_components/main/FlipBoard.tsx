@@ -1,49 +1,53 @@
-import React, { useState, useEffect } from 'react';
+"use client"
+
+import React, { useState, useEffect } from 'react'
 
 interface FlipBoardProps {
-  text: string;
-  className?: string;
+  text: string
+  className?: string
 }
 
 export const FlipBoard: React.FC<FlipBoardProps> = ({ text, className = '' }) => {
-  const [display, setDisplay] = useState(text);
-  const [flipping, setFlipping] = useState<number | null>(null);
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ';
+  const [display, setDisplay] = useState(text)
+  const [flipping, setFlipping] = useState<number | null>(null)
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 '
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      flipAllChars();
-    }, 10000); // Trigger a full flip every 10 seconds
+      flipAllChars()
+    }, 10000) // Trigger a full flip every 10 seconds
 
-    return () => clearInterval(intervalId);
-  }, [text]);
-
-  const flipAllChars = () => {
-    text.split('').forEach((char, index) => {
-      setTimeout(() => flipChar(index), index * 200); // Delay each character's flip
-    });
-  };
+    return () => clearInterval(intervalId)
+  }, [text])
 
   const flipChar = (index: number) => {
-    let currentChar = text[index];
-    let flipCount = 0;
-    setFlipping(index);
+    let currentChar = text[index]
+    let flipCount = 0
+    setFlipping(index)
+    
     const flipInterval = setInterval(() => {
       setDisplay(prev =>
         prev.substring(0, index) +
         characters[Math.floor(Math.random() * characters.length)] +
         prev.substring(index + 1)
-      );
-      flipCount++;
-      if (flipCount === 3) { // Reduced number of flips
-        clearInterval(flipInterval);
+      )
+      flipCount++
+      
+      if (flipCount === 8) { // More flips for airport feel
+        clearInterval(flipInterval)
         setDisplay(prev =>
           prev.substring(0, index) + currentChar + prev.substring(index + 1)
-        );
-        setTimeout(() => setFlipping(null), 500); // Delay resetting flipping state
+        )
+        setTimeout(() => setFlipping(null), 100)
       }
-    }, 150); // Slower flip speed
-  };
+    }, 50) // Faster flip speed for mechanical feel
+  }
+
+  const flipAllChars = () => {
+    text.split('').forEach((char, index) => {
+      setTimeout(() => flipChar(index), index * 100) // Quicker delay between chars
+    })
+  }
 
   return (
     <div className={`inline-flex ${className}`}>
@@ -61,7 +65,7 @@ export const FlipBoard: React.FC<FlipBoardProps> = ({ text, className = '' }) =>
             <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-sky-400 to-indigo-800 text-white rounded shadow-md backface-hidden">
               {char}
             </div>
-            <div
+            <div 
               className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-indigo-800 to-sky-400 text-white rounded shadow-md backface-hidden"
               style={{ transform: 'rotateX(180deg)' }}
             >
@@ -72,4 +76,4 @@ export const FlipBoard: React.FC<FlipBoardProps> = ({ text, className = '' }) =>
       ))}
     </div>
   );
-};
+}
