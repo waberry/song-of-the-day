@@ -92,14 +92,44 @@ const GuessCard = ({ guess, index }) => {
   )
 }
 
+<<<<<<< HEAD
 export default function LandingPage() {
   const [searchTerm, setSearchTerm] = useState("")
+=======
+// Add interface for search result songs
+interface SearchResultSong {
+  id: string;
+  name: string;
+  artists: { name: string }[];
+  album: {
+    name: string;
+    images: { url: string }[];
+    release_date: string;
+  };
+  genre: string;
+}
+
+// Add proper typing to ClassicMode component
+export default function ClassicMode() {
+  const [searchTerm, setSearchTerm] = useState<string>("")
+>>>>>>> 7684ec5 (feat(modes): implement game modes selection UI and dialogs)
   const [dropdownVisible, setDropdownVisible] = useState(false)
   const [gameState, setGameState] = useState(null)
   const [dailySong, setDailySong] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [searchResults, setSearchResults] = useState([])
+  const [searchResults, setSearchResults] = useState<SearchResultSong[]>([])
   const [isSearching, setIsSearching] = useState(false)
+<<<<<<< HEAD
+=======
+  const [streak, setStreak] = useState(0)
+  const [maxStreak, setMaxStreak] = useState(0)
+  const [remainingGuesses, setRemainingGuesses] = useState(6)
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error' | null;
+    message: string;
+  }>({ type: null, message: '' });
+  const [selectedIndex, setSelectedIndex] = useState(-1)
+>>>>>>> 7684ec5 (feat(modes): implement game modes selection UI and dialogs)
 
   useEffect(() => {
     async function initializeGameState() {
@@ -134,8 +164,12 @@ export default function LandingPage() {
     }
   }, [searchTerm])
 
+<<<<<<< HEAD
   const handleSearch = (value) => {
     if (gameState?.dailySongFound) return
+=======
+  const handleSearch = (value: string) => {
+>>>>>>> 7684ec5 (feat(modes): implement game modes selection UI and dialogs)
     setSearchTerm(value.toLowerCase())
   }
 
@@ -152,11 +186,79 @@ export default function LandingPage() {
     }, 200)
   }
 
+<<<<<<< HEAD
   const handleDDSelect = (selectedSong) => {
     // Implement song selection logic here
     console.log("Selected song:", selectedSong)
     setDropdownVisible(false)
     setSearchTerm("")
+=======
+  const handleGuess = (selectedSong: SearchResultSong) => {
+    if (remainingGuesses > 0) {
+      setGuesses([selectedSong, ...guesses])
+      setRemainingGuesses(remainingGuesses - 1)
+      setDropdownVisible(false)
+      setSearchTerm("")
+
+      if (selectedSong.name.toLowerCase() === currentSong.name.toLowerCase() &&
+          selectedSong.artists[0].name.toLowerCase() === currentSong.artists[0].name.toLowerCase()) {
+        // Correct guess
+        setStreak(streak + 1)
+        setMaxStreak(Math.max(maxStreak, streak + 1))
+        setNotification({
+          type: 'success',
+          message: 'Correct! Loading next song...'
+        })
+        setTimeout(() => {
+          loadNewSong()
+          setNotification({ type: null, message: '' })
+        }, 2000)
+      } else if (remainingGuesses === 1) {
+        // Last guess and incorrect
+        setStreak(0)
+        setNotification({
+          type: 'error',
+          message: `Game Over! The song was "${currentSong.name}" by ${currentSong.artists[0].name}`
+        })
+        setTimeout(() => {
+          loadNewSong()
+          setNotification({ type: null, message: '' })
+        }, 2000)
+      }
+    }
+  }
+
+  const handleSkip = () => {
+    setStreak(0)
+    loadNewSong()
+>>>>>>> 7684ec5 (feat(modes): implement game modes selection UI and dialogs)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!dropdownVisible || searchResults.length === 0) return
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault()
+        setSelectedIndex(prev => 
+          prev < searchResults.length - 1 ? prev + 1 : prev
+        )
+        break
+      case 'ArrowUp':
+        e.preventDefault()
+        setSelectedIndex(prev => prev > 0 ? prev - 1 : prev)
+        break
+      case 'Enter':
+        e.preventDefault()
+        if (selectedIndex >= 0) {
+          handleGuess(searchResults[selectedIndex])
+        }
+        break
+      case 'Escape':
+        setDropdownVisible(false)
+        setSelectedIndex(-1)
+        break
+    }
   }
 
   if (isLoading) {
@@ -168,6 +270,7 @@ export default function LandingPage() {
   }
 
   return (
+<<<<<<< HEAD
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-sky-400 to-indigo-800">
       <header className="flex h-14 items-center justify-between px-4 lg:px-6">
         <Link href="/" className="flex items-center text-2xl font-bold text-white">
@@ -392,6 +495,154 @@ export default function LandingPage() {
           </nav>
         </div>
       </footer>
+=======
+    <div className="flex min-h-screen">
+      <div className="hidden lg:block w-64">
+        {/* Ad content */}
+      </div>
+
+      <div className="flex-1 max-w-4xl mx-auto px-4 py-8">
+        {notification.type && (
+          <div className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg transition-all duration-300 ${
+            notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+          } text-white`}>
+            {notification.message}
+          </div>
+        )}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold">Classic Mode</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center">
+                <FontAwesomeIcon icon={faFire} className="text-orange-500 mr-2" />
+                <span className="font-semibold">Streak: {streak}</span>
+              </div>
+              <div>
+                <span className="font-semibold">Max Streak: {maxStreak}</span>
+              </div>
+            </div>
+            <Progress value={(6 - remainingGuesses) / 6 * 100} className="mb-4" />
+            <p className="text-center mb-4">Guesses remaining: {remainingGuesses}</p>
+            <div className="relative w-full max-w-2xl mx-auto">
+              <Input
+                type="text"
+                placeholder="Search by artist or title"
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                onKeyDown={handleKeyDown}
+                className="h-12 w-full rounded-full pl-12 pr-4 text-base transition-all duration-300 ease-in-out border-indigo-300 bg-white text-gray-800 shadow-md hover:shadow-lg focus:border-indigo-500 focus:shadow-lg dark:border-indigo-600 dark:bg-gray-800 dark:text-white sm:text-base md:text-lg"
+              />
+              <FontAwesomeIcon
+                icon={faSearch}
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-xl text-indigo-500 dark:text-indigo-400"
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm("")}
+                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100"
+                >
+                  <FontAwesomeIcon icon={faTimes} className="text-lg" />
+                </button>
+              )}
+            </div>
+
+            {dropdownVisible && searchTerm && (
+              <Card className="absolute z-50 mt-1 w-full max-h-60 overflow-auto">
+                <CardContent className="p-0">
+                  {isSearching ? (
+                    <div className="p-4 text-center">
+                      <FontAwesomeIcon icon={faSpinner} spin /> Searching...
+                    </div>
+                  ) : searchResults.length > 0 ? (
+                    <ul className="divide-y dark:divide-gray-700">
+                      {searchResults.map((song, index) => (
+                        <li
+                          key={song.id}
+                          className={`flex cursor-pointer items-center p-4 hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                            index === selectedIndex ? 'bg-gray-100 dark:bg-gray-700' : ''
+                          }`}
+                          onClick={() => handleGuess(song)}
+                          onMouseEnter={() => setSelectedIndex(index)}
+                        >
+                          <div>
+                            <p className="font-medium">{song.name}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{song.artists[0].name}</p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="p-4 text-center text-gray-500 dark:text-gray-400">No results found</div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="mb-6 bg-purple-600 text-white dark:bg-purple-800">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <Music className="h-6 w-6" />
+              <h2 className="text-xl font-semibold">Mystery Song</h2>
+            </div>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div className="flex items-center justify-between">
+                <span>Artists:</span>
+                <span className="text-purple-300 dark:text-purple-200">Hidden</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Genre:</span>
+                <span className="text-purple-300 dark:text-purple-200">Hidden</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Year:</span>
+                <span className="text-purple-300 dark:text-purple-200">Hidden</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Decade:</span>
+                <span className="text-purple-300 dark:text-purple-200">{Math.floor(currentSong.year / 10) * 10}s</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {guesses.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Your Guesses</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <div className="space-y-4">
+                {guesses.map((guess, index) => (
+                  <GuessCard key={index} guess={guess} currentSong={currentSong} />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="flex justify-center space-x-4">
+          <Button onClick={handleSkip} variant="outline" className="flex items-center">
+            <SkipForward className="mr-2 h-4 w-4" />
+            Skip Song
+          </Button>
+          <Button onClick={loadNewSong} className="flex items-center">
+            <Play className="mr-2 h-4 w-4" />
+            New Song
+          </Button>
+        </div>
+      </div>
+
+      <div className="hidden lg:block w-64">
+        {/* Ad content */}
+      </div>
+>>>>>>> 7684ec5 (feat(modes): implement game modes selection UI and dialogs)
     </div>
   )
 }
