@@ -20,7 +20,6 @@ export const songRouter = createTRPCRouter({
       z.object({
         anonymousUserId: z.string(),
         modeId: z.number(),
-        songSpotifyId: z.string()
       })
     ).query(async ({ input }) => {
     console.log('Validated input:', input); // Zod validates the input here
@@ -83,8 +82,8 @@ export const songRouter = createTRPCRouter({
 
     console.log("returned ",response)
 
+    return response
 
-    const todaysUserGuesses = 0
 
     // // Count successful guesses for today
     // let todaysUserGuesses = await prisma.guess.count({

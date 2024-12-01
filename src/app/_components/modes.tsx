@@ -1,18 +1,29 @@
 "use client";
 
+import * as React from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-
 import { api } from "~/trpc/react";
+import type { RouterOutputs } from "~/trpc/react";
+import { type TRPCClientErrorLike } from "@trpc/client";
+import { type AppRouter } from "~/server/api/root";
+
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Award, Headphones, Zap } from "lucide-react"
 
 export function Modes() {
   const [modes] = api.mode.getModes.useSuspenseQuery();
-  const queryClient = useQueryClient(); // Initialize the query client
+  const queryClient = useQueryClient();
 
-  const [playlistId, setPlaylistId] = useState("");
+  const [playlistId, setPlaylistId] = React.useState("");
   const createMode = api.mode.createMode.useMutation({
-    onSettled(data, error, variables, context) {
-      queryClient.invalidateQueries('getModes'); // Invalidate the query
+    onSettled(
+      data: RouterOutputs["mode"]["createMode"] | undefined,
+      error: TRPCClientErrorLike<AppRouter> | null,
+      variables: { playlistId: string },
+      context: unknown
+    ) {
+      queryClient.invalidateQueries({ queryKey: ['mode.getModes'] });
     }
   });
 
@@ -53,4 +64,4 @@ export function Modes() {
       </form>
     </div>
   );
-}
+} 
