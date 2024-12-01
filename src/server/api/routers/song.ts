@@ -2,68 +2,80 @@ import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { getRandom64BitNumber } from "~/utils";
 
 const prisma = new PrismaClient();
 
 export const songRouter = createTRPCRouter({
   getSongToGuess: publicProcedure
-  .input(
-    z.object({
-      userId: z.string(),
-      modeId: z.number(),
-    })
-  ).query(async ({ input }) => {
+    .input(
+      z.object({
+        anonymousUserId: z.string(),
+        modeId: z.number(),
+      })
+    ).query(async ({ input }) => {
     console.log('Validated input:', input); // Zod validates the input here
     console.log("coucou2")
 
-    // // Check if the mode exists in the mode table
-    // const mode = await prisma.mode.findUnique({
-    //   where: { id: modeId },
-    // });
+    // Check if the mode exists in the mode table
+    const mode = await prisma.mode.findUnique({
+      where: { id: input.modeId },
+    });
 
-    // if (!mode) {
-    //   throw new Error('Invalid mode');
-    // }
-    // return mode;
+    if (!mode) {
+      throw new Error('Invalid mode');
+    }
 
-    // // Check if the user exists
-    // let user = await prisma.user.findUnique({
-    //   where: { anonymousUserId: userId },
-    // });
+    // Check if the user exists
+    let user = await prisma.user.findUnique({
+      where: { anonymousUserId: input.anonymousUserId },
+    });
 
-    // // If the user doesn't exist, create a new one
-    // if (!user) {
-    //   user = await prisma.user.create({
-    //     data: {
-    //       anonymousUserId: userId,
-    //     },
-    //   });
-    // }
+    // If the user doesn't exist, create a new one
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          anonymousUserId: input.anonymousUserId,
+        },
+      });
+    }
 
-    // // Get today's date range
-    // const today = new Date();
-    // const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-    // const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+    // Get today's date range
+    const today = new Date();
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
 
-    // // Check if there's already an entry in the "day" table for today
-    // let dayEntry = await prisma.day.findFirst({
-    //   where: {
-    //     date: {
-    //       gte: startOfDay,
-    //       lte: endOfDay,
-    //     },
-    //   },
-    // });
+    // Check if there's already an entry in the "day" table for today
+    let dayEntry = await prisma.day.findFirst({
+      where: {
+        date: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+    });
 
-    // // If no entry exists, create a new one for today
-    // if (!dayEntry) {
-    //   dayEntry = await prisma.day.create({
-    //     data: {
-    //       date: new Date(),
-    //       seed: getRandom64BitNumber(),
-    //     },
-    //   });
-    // }
+
+    const response = {
+      mode: mode, 
+      dayEntry: dayEntry
+    }
+
+    // If no entry exists, create a new one for today
+    if (!dayEntry) {
+      console.log("dayEntry doesnt exist yet")
+      dayEntry = await prisma.day.create({
+        data: {
+          date: new Date(),
+          seed: getRandom64BitNumber().toString(),
+        },
+      });
+    }
+
+    console.log("returned ",response)
+
+    return response
+
 
     // // Count successful guesses for today
     // let todaysUserGuesses = await prisma.guess.count({
