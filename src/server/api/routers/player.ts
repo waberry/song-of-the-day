@@ -17,6 +17,17 @@ const userIdentificationSchema = z.object({
   timezone: z.string(),
 });
 
+const fingerprintSchema = z.object({
+  userAgent: z.string(),
+  browser: z.string(),
+  browserVersion: z.string(),
+  os: z.string(),
+  osVersion: z.string(),
+  screenResolution: z.string(),
+  timezone: z.string(),
+  fingerprint: z.string(),
+});
+
 export const playerRouter = router({
   hello: publicProcedure
   .input(z.object({ text: z.string().min(1) }))
@@ -178,8 +189,6 @@ export const playerRouter = router({
           where: whereClause,
           _count: {
             _all: true,
-          },
-          _sum: {
             success: true,
           },
         });
@@ -192,6 +201,32 @@ export const playerRouter = router({
           cause: error,
         });
       }
+    }),
+
+  identify: publicProcedure
+    .input(fingerprintSchema)
+    .mutation(async ({ input, ctx }) => {
+      const existingUser = await ctx.db.user.findUnique({
+        where: { anonymousUserId: input.fingerprint }
+      });
+
+      if (existingUser) {
+        return {
+          anonymousUserId: existingUser.anonymousUserId,
+          isNewUser: false
+        };
+      }
+
+      const newUser = await ctx.db.user.create({
+        data: {
+          anonymousUserId: input.fingerprint
+        }
+      });
+
+      return {
+        anonymousUserId: newUser.anonymousUserId,
+        isNewUser: true
+      };
     }),
 });
 // Helper function to calculate current streak

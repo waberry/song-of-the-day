@@ -67,3 +67,30 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* custom.css */
+.navbar-nav .nav-item .nav-link:hover {
+  color: black;
+  background-color: #f0f0f0;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  transition: background-color 5000s ease-in-out 0s;
+  -webkit-text-fill-color: #1f2937 !important;
+}
+
+@keyframes flip {
+  0%, 100% { transform: rotateX(0deg); }
+  50% { transform: rotateX(180deg); }
+}
+
+.animate-flip {
+  animation: flip 0.5s ease-in-out;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
