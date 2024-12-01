@@ -10,12 +10,14 @@ export function Songs() {
   // State for form input
   const [chosenModeId, setChosenModeId] = useState("");
   const [userAnonymousId, setUserAnonymousId] = useState("");
+  const [songSpotifyId, setSongSpotifyId] = useState("");
 
   // Query to get the song, based on input
   const { data: songToGuess, error, isFetching } = api.song.getSongToGuess.useQuery(
     {
       anonymousUserId: userAnonymousId,
       modeId: parseInt(chosenModeId) || 0, // Convert to number or fallback to 0
+      songSpotifyId: songSpotifyId
     },
     {
       enabled: !!userAnonymousId && !!chosenModeId, // Only fetch if input is valid
@@ -57,6 +59,13 @@ export function Songs() {
           placeholder="User Anonymous ID"
           value={userAnonymousId}
           onChange={(e) => setUserAnonymousId(e.target.value)}
+          className="w-full rounded-full px-4 py-2 text-black"
+        />
+        <input
+          type="text"
+          placeholder="Song Spotify ID"
+          value={songSpotifyId}
+          onChange={(e) => setSongSpotifyId(e.target.value)}
           className="w-full rounded-full px-4 py-2 text-black"
         />
         <button
