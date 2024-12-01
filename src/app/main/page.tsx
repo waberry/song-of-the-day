@@ -38,6 +38,14 @@ export default function MainPage() {
       <Header darkMode={true} toggleDarkMode={() => {}} />
       <main className="container mx-auto px-4 py-8">
         <ResponsiveTabs tabs={tabs} defaultValue="daily" />
+        
+        <div className="max-w-xl mx-auto">
+          <input
+            type="search"
+            placeholder="Search for a song..."
+            className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white placeholder-white/50"
+          />
+        </div>
       </main>
       <Footer />
     </div>
