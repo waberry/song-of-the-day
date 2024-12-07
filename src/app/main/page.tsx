@@ -35,7 +35,6 @@ export default function MainPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-900 to-black text-white">
-      <Header darkMode={true} toggleDarkMode={() => {}} />
       <main className="container mx-auto px-4 py-8">
         <ResponsiveTabs tabs={tabs} defaultValue="daily" />
         
