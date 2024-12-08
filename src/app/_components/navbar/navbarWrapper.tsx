@@ -1,14 +1,14 @@
 import { getServerSession } from "next-auth/next";
+import { authOptions } from "~/app/api/auth/[...nextauth]/route";
 import Navbar from "./navbar";
-// import { authOptions } from "../api/auth/[...nextauth]/route";
+import { SessionProvider } from "next-auth/react";
 
 export default async function NavbarWrapper() {
-  // const session = await getServerSession(authOptions);
-  // const session = await getServerSession();
-  const session = null
+  const session = await getServerSession(authOptions);
+  
   return (
-    <>
+    <SessionProvider session={session}>
       <Navbar />
-    </>
+    </SessionProvider>
   );
 }

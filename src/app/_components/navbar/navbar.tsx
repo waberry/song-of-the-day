@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu, X, Music, BarChart2, Info, Sun, Moon } from 'lucide-react';
+import { signIn, signOut, useSession } from "next-auth/react";
 
 interface NavLink {
   href: string;
@@ -14,8 +15,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [status, setStatus] = useState("");//TODO 
-  const [session, setSession] = useState(null);
+  const { data: session, status } = useSession();
 
   const navLinks: NavLink[] = [
     { href: "/main", label: "Classic", icon: <Music size={20} /> },
@@ -42,13 +42,11 @@ export default function Navbar() {
   }, [darkMode]);
 
   const handleSignIn = async () => {
-    // Implement sign in logic here
-    console.log("Sign in clicked");
+    await signIn("spotify", { callbackUrl: "/main" });
   };
 
   const handleSignOut = async () => {
-    // Implement sign out logic here
-    console.log("Sign out clicked");
+    await signOut({ callbackUrl: "/" });
   };
 
   const toggleMobileMenu = () => {
@@ -105,7 +103,7 @@ export default function Navbar() {
               ) : (
                 <button
                   onClick={handleSignIn}
-                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center transition-colors duration-200"
+                  className="bg-[#1DB954] hover:bg-[#1ed760] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center transition-colors duration-200"
                   aria-label="Connect with Spotify"
                 >
                   <Music size={20} className="mr-2" />
@@ -162,7 +160,7 @@ export default function Navbar() {
               ) : (
                 <button
                   onClick={handleSignIn}
-                  className="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center justify-center transition-colors duration-200"
+                  className="w-full bg-[#1DB954] hover:bg-[#1ed760] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center justify-center transition-colors duration-200"
                   aria-label="Connect with Spotify"
                 >
                   <Music size={20} className="mr-2" />
