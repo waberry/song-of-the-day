@@ -2,7 +2,7 @@ import "~/styles/globals.css";
 
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
-import NavbarWrapper from "src/app/_components/navbar/navbarWrapper"
+import NavbarWrapper from "~/app/components/navbar/navbarWrapper"
 import { Inter } from "next/font/google";
 
 import { TRPCReactProvider } from "~/trpc/react";
