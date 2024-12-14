@@ -10,7 +10,7 @@ const scopes = [
   "user-read-playback-state",
 ].join(" ");
 
-const authOptions = {
+export const authOptions = {
   providers: [
     SpotifyProvider({
       clientId: env.SPOTIFY_CLIENT_ID,

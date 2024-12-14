@@ -15,7 +15,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const { data: session, status } = useSession();
+  const { data: session, status } =[];//useSession();
 
   const navLinks: NavLink[] = [
     { href: "/main", label: "Classic", icon: <Music size={20} /> },
