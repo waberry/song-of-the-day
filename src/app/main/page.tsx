@@ -1,13 +1,13 @@
 "use client"
 
 import React, { useState } from "react"
-import Header from "../_components/main/Header"
+import Header from "../_components/main/OldHeader"
 import Footer from "../_components/main/Footer"
 import DailyChallenge from "../_components/main/DailyChallenge"
 import GameModes from "../_components/modes/GameModes"
 import { GenreSelector } from "../_components/modes/GenreSelector"
 import { ResponsiveTabs } from "../_components/main/ResponsiveTabs"
-import EnhancedGameHeader from "../_components/main/header"
+import EnhancedGameHeader from "../_components/main/Header"
 
 export default function MainPage() {
   const [isGenreSelectorOpen, setIsGenreSelectorOpen] = useState(false)
